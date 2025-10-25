@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView, StyleSheet } from 'react-native';
+import { SafeAreaView, StyleSheet, StatusBar } from 'react-native';
+import SplashScreen from './src/screens/SplashScreen';
 import PlayersScreen from './src/screens/PlayersScreen';
 import ModeSelectionScreen from './src/screens/ModeSelectionScreen';
 import WishesGameScreen from './src/screens/WishesGameScreen';
@@ -8,12 +8,16 @@ import DatingGameScreen from './src/screens/DatingGameScreen';
 import { Player, GameMode } from './src/types';
 import { COLORS } from './src/constants/colors';
 
-type Screen = 'players' | 'mode' | 'game';
+type Screen = 'splash' | 'players' | 'mode' | 'game';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('players');
+  const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameMode, setGameMode] = useState<GameMode | null>(null);
+
+  const handleSplashFinish = () => {
+    setCurrentScreen('players');
+  };
 
   const handlePlayersAdded = (newPlayers: Player[]) => {
     setPlayers(newPlayers);
@@ -37,7 +41,11 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="auto" />
+      <StatusBar barStyle="light-content" backgroundColor="#ff6b6b" />
+
+      {currentScreen === 'splash' && (
+        <SplashScreen onFinish={handleSplashFinish} />
+      )}
 
       {currentScreen === 'players' && (
         <PlayersScreen onContinue={handlePlayersAdded} />

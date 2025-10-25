@@ -1,33 +1,29 @@
 import React, { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Animated,
-  Easing,
-  Modal,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing, Modal } from 'react-native';
 import { Player } from '../types';
 import { COLORS } from '../constants/colors';
-import Bottle from '../components/Bottle';
+import BottlePremium from '../components/BottlePremium';
+import GradientBackground from '../components/GradientBackground';
+import GradientButton from '../components/GradientButton';
+import ConfettiExplosion from '../components/ConfettiExplosion';
+import FloatingParticles from '../components/FloatingParticles';
+import LinearGradient from 'react-native-linear-gradient';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 interface Props {
   players: Player[];
   onBack: () => void;
 }
 
-export default function DatingGameScreen({ players, onBack }: Props) {
+export default function DatingGameScreenPremium({ players, onBack }: Props) {
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentSpinnerIndex, setCurrentSpinnerIndex] = useState(0);
   const [targetPlayerIndex, setTargetPlayerIndex] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [playersState, setPlayersState] = useState(players);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const rotationValue = useRef(new Animated.Value(0)).current;
-
-  const malePlayers = playersState.filter(p => p.gender === 'M');
-  const femalePlayers = playersState.filter(p => p.gender === 'F');
 
   const spinBottle = () => {
     if (isSpinning) return;
@@ -39,29 +35,29 @@ export default function DatingGameScreen({ players, onBack }: Props) {
 
     if (oppositeGenderPlayers.length === 0) return;
 
+    ReactNativeHapticFeedback.trigger('impactHeavy');
     setIsSpinning(true);
     setShowResult(false);
+    setShowConfetti(false);
     setTargetPlayerIndex(null);
 
-    // Случайный выбор из противоположного пола
     const randomTarget =
       oppositeGenderPlayers[Math.floor(Math.random() * oppositeGenderPlayers.length)];
     const targetIndex = playersState.findIndex(p => p.id === randomTarget.id);
 
-    // Рассчитываем угол для целевого игрока
     const anglePerPlayer = 360 / playersState.length;
     const targetAngle = targetIndex * anglePerPlayer;
 
-    // Добавляем несколько оборотов
-    const randomRotations = 3 + Math.random() * 5;
+    const randomRotations = 4 + Math.random() * 6;
     const totalRotation = randomRotations * 360 + targetAngle;
 
     Animated.timing(rotationValue, {
       toValue: totalRotation,
-      duration: 3000,
-      easing: Easing.out(Easing.cubic),
+      duration: 4000,
+      easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
       useNativeDriver: true,
     }).start(() => {
+      ReactNativeHapticFeedback.trigger('notificationSuccess');
       setIsSpinning(false);
       setTargetPlayerIndex(targetIndex);
       setShowResult(true);
@@ -70,23 +66,29 @@ export default function DatingGameScreen({ players, onBack }: Props) {
 
   const handleAction = (action: 'kiss' | 'ignore' | 'like') => {
     if (action === 'like' && targetPlayerIndex !== null) {
+      ReactNativeHapticFeedback.trigger('notificationSuccess');
+      setShowConfetti(true);
       const updatedPlayers = [...playersState];
       updatedPlayers[targetPlayerIndex].likes += 1;
       updatedPlayers[currentSpinnerIndex].likes += 1;
       setPlayersState(updatedPlayers);
-    }
 
-    nextTurn();
+      setTimeout(() => nextTurn(), 500);
+    } else if (action === 'kiss') {
+      ReactNativeHapticFeedback.trigger('notificationWarning');
+      nextTurn();
+    } else {
+      nextTurn();
+    }
   };
 
   const nextTurn = () => {
     setShowResult(false);
+    setShowConfetti(false);
 
-    // Находим следующего игрока противоположного пола
     const currentGender = playersState[currentSpinnerIndex].gender;
     let nextIndex = (currentSpinnerIndex + 1) % playersState.length;
 
-    // Ищем следующего игрока с противоположным полом текущему
     while (playersState[nextIndex].gender === currentGender) {
       nextIndex = (nextIndex + 1) % playersState.length;
     }
@@ -100,9 +102,8 @@ export default function DatingGameScreen({ players, onBack }: Props) {
   const targetPlayer =
     targetPlayerIndex !== null ? playersState[targetPlayerIndex] : null;
 
-  // Расположение игроков по кругу
   const renderPlayers = () => {
-    const radius = 130;
+    const radius = 140;
     const centerX = 0;
     const centerY = 0;
 
@@ -122,181 +123,216 @@ export default function DatingGameScreen({ players, onBack }: Props) {
             {
               left: x + 150,
               top: y + 150,
-              backgroundColor: isSpinner
-                ? COLORS.warning
-                : isTarget
-                ? COLORS.success
-                : player.gender === 'M'
-                ? COLORS.male
-                : COLORS.female,
             },
           ]}
         >
-          <Text style={styles.playerCircleText}>{player.name}</Text>
-          {player.likes > 0 && (
-            <View style={styles.likeBadge}>
-              <Text style={styles.likeBadgeText}>❤️ {player.likes}</Text>
-            </View>
-          )}
+          <LinearGradient
+            colors={
+              isSpinner
+                ? ['#ffd43b', '#fab005']
+                : isTarget
+                ? ['#51cf66', '#37b24d']
+                : player.gender === 'M'
+                ? ['#4a90e2', '#357abd']
+                : ['#ff69b4', '#e65a9f']
+            }
+            style={styles.playerGradient}
+          >
+            <Text style={styles.playerCircleText}>{player.name}</Text>
+            {player.likes > 0 && (
+              <View style={styles.likeBadge}>
+                <Text style={styles.likeBadgeText}>❤️ {player.likes}</Text>
+              </View>
+            )}
+          </LinearGradient>
         </View>
       );
     });
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={onBack}>
-          <Text style={styles.backButtonText}>← Назад</Text>
-        </TouchableOpacity>
-        <Text style={styles.modeTitle}>Режим: Знакомства 💕</Text>
-      </View>
+    <GradientBackground colors={['#fff0f6', '#ffe0f0', '#ffc9ea']}>
+      <FloatingParticles count={15} color="rgba(255, 105, 180, 0.3)" size={6} />
+      {showConfetti && <ConfettiExplosion count={80} duration={3000} />}
 
-      <View style={styles.spinnerInfo}>
-        <Text style={styles.spinnerLabel}>Крутит:</Text>
-        <Text style={styles.spinnerName}>
-          {currentSpinner.name} ({currentSpinner.gender})
-        </Text>
-      </View>
+      <View style={styles.container}>
+        <LinearGradient
+          colors={['#4ecdc4', '#44a3d9']}
+          style={styles.header}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+        >
+          <TouchableOpacity style={styles.backButton} onPress={onBack}>
+            <Text style={styles.backButtonText}>← Назад</Text>
+          </TouchableOpacity>
+          <Text style={styles.modeTitle}>💕 Режим: Знакомства</Text>
+        </LinearGradient>
 
-      <View style={styles.gameArea}>
-        <View style={styles.playersCircle}>{renderPlayers()}</View>
+        <LinearGradient
+          colors={
+            currentSpinner.gender === 'M'
+              ? ['#4a90e2', '#357abd']
+              : ['#ff69b4', '#e65a9f']
+          }
+          style={styles.spinnerInfo}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+        >
+          <Text style={styles.spinnerLabel}>Крутит:</Text>
+          <Text style={styles.spinnerName}>
+            {currentSpinner.name} ({currentSpinner.gender === 'M' ? '♂' : '♀'})
+          </Text>
+        </LinearGradient>
 
-        <View style={styles.bottleContainer}>
-          <Bottle rotation={rotationValue} isSpinning={isSpinning} />
+        <View style={styles.gameArea}>
+          <View style={styles.playersCircle}>{renderPlayers()}</View>
+
+          <View style={styles.bottleContainer}>
+            <BottlePremium rotation={rotationValue} isSpinning={isSpinning} />
+          </View>
         </View>
-      </View>
 
-      <TouchableOpacity
-        style={[styles.spinButton, isSpinning && styles.spinButtonDisabled]}
-        onPress={spinBottle}
-        disabled={isSpinning}
-      >
-        <Text style={styles.spinButtonText}>
-          {isSpinning ? 'Крутится...' : 'КРУТИТЬ'}
-        </Text>
-      </TouchableOpacity>
+        <GradientButton
+          title={isSpinning ? 'КРУТИТСЯ...' : '💕 КРУТИТЬ БУТЫЛОЧКУ'}
+          onPress={spinBottle}
+          disabled={isSpinning}
+          colors={['#4ecdc4', '#44a3d9']}
+          style={styles.spinButton}
+        />
 
-      <Modal visible={showResult} transparent animationType="fade">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Пара найдена! 💕</Text>
+        <Modal visible={showResult} transparent animationType="fade">
+          <View style={styles.modalContainer}>
+            <LinearGradient
+              colors={['#ffffff', '#fff0f6']}
+              style={styles.modalContent}
+            >
+              <Text style={styles.modalTitle}>💕 Пара найдена!</Text>
 
-            <View style={styles.pairContainer}>
-              <View style={styles.playerCard}>
-                <View
-                  style={[
-                    styles.playerAvatar,
-                    {
-                      backgroundColor:
-                        currentSpinner.gender === 'M' ? COLORS.male : COLORS.female,
-                    },
-                  ]}
+              <View style={styles.pairContainer}>
+                <LinearGradient
+                  colors={
+                    currentSpinner.gender === 'M'
+                      ? ['#4a90e2', '#357abd']
+                      : ['#ff69b4', '#e65a9f']
+                  }
+                  style={styles.playerAvatar}
                 >
                   <Text style={styles.playerAvatarText}>
                     {currentSpinner.name[0]}
                   </Text>
-                </View>
-                <Text style={styles.playerCardName}>{currentSpinner.name}</Text>
-              </View>
+                </LinearGradient>
 
-              <Text style={styles.heartIcon}>💕</Text>
+                <Text style={styles.heartIcon}>💕</Text>
 
-              <View style={styles.playerCard}>
-                <View
-                  style={[
-                    styles.playerAvatar,
-                    {
-                      backgroundColor:
-                        targetPlayer?.gender === 'M' ? COLORS.male : COLORS.female,
-                    },
-                  ]}
+                <LinearGradient
+                  colors={
+                    targetPlayer?.gender === 'M'
+                      ? ['#4a90e2', '#357abd']
+                      : ['#ff69b4', '#e65a9f']
+                  }
+                  style={styles.playerAvatar}
                 >
                   <Text style={styles.playerAvatarText}>
                     {targetPlayer?.name[0]}
                   </Text>
-                </View>
-                <Text style={styles.playerCardName}>{targetPlayer?.name}</Text>
+                </LinearGradient>
               </View>
-            </View>
 
-            <Text style={styles.actionPrompt}>Что вы выберете?</Text>
+              <Text style={styles.actionPrompt}>Что вы выберете?</Text>
 
-            <View style={styles.actionsContainer}>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.kissButton]}
-                onPress={() => handleAction('kiss')}
-              >
-                <Text style={styles.actionEmoji}>💋</Text>
-                <Text style={styles.actionButtonText}>Поцеловать</Text>
-              </TouchableOpacity>
+              <View style={styles.actionsContainer}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => handleAction('kiss')}
+                >
+                  <LinearGradient
+                    colors={['#ff6b6b', '#ee5a6f']}
+                    style={styles.actionButtonGradient}
+                  >
+                    <Text style={styles.actionEmoji}>💋</Text>
+                    <Text style={styles.actionButtonText}>Поцеловать</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.actionButton, styles.likeButton]}
-                onPress={() => handleAction('like')}
-              >
-                <Text style={styles.actionEmoji}>❤️</Text>
-                <Text style={styles.actionButtonText}>Лайк</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => handleAction('like')}
+                >
+                  <LinearGradient
+                    colors={['#51cf66', '#37b24d']}
+                    style={styles.actionButtonGradient}
+                  >
+                    <Text style={styles.actionEmoji}>❤️</Text>
+                    <Text style={styles.actionButtonText}>Лайк</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.actionButton, styles.ignoreButton]}
-                onPress={() => handleAction('ignore')}
-              >
-                <Text style={styles.actionEmoji}>🤷</Text>
-                <Text style={styles.actionButtonText}>Пропустить</Text>
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => handleAction('ignore')}
+                >
+                  <LinearGradient
+                    colors={['#868e96', '#495057']}
+                    style={styles.actionButtonGradient}
+                  >
+                    <Text style={styles.actionEmoji}>🤷</Text>
+                    <Text style={styles.actionButtonText}>Пропустить</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
           </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
+    </GradientBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   header: {
     padding: 20,
     paddingTop: 40,
-    backgroundColor: COLORS.white,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   backButton: {
     padding: 10,
   },
   backButtonText: {
-    color: COLORS.primary,
+    color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
   },
   modeTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: '#ffffff',
     textAlign: 'center',
     marginTop: 10,
   },
   spinnerInfo: {
-    backgroundColor: COLORS.secondary,
-    padding: 15,
+    padding: 20,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   spinnerLabel: {
-    fontSize: 14,
-    color: COLORS.white,
+    fontSize: 16,
+    color: '#ffffff',
     fontWeight: '600',
   },
   spinnerName: {
-    fontSize: 20,
-    color: COLORS.white,
+    fontSize: 28,
+    color: '#ffffff',
     fontWeight: 'bold',
     marginTop: 5,
   },
@@ -307,37 +343,47 @@ const styles = StyleSheet.create({
   },
   playersCircle: {
     position: 'absolute',
-    width: 300,
-    height: 300,
+    width: 320,
+    height: 320,
   },
   playerCircle: {
     position: 'absolute',
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    transform: [{ translateX: -40 }, { translateY: -40 }],
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  playerGradient: {
+    flex: 1,
+    borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    transform: [{ translateX: -35 }, { translateY: -35 }],
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    padding: 4,
   },
   playerCircleText: {
-    color: COLORS.white,
-    fontSize: 12,
+    color: '#ffffff',
+    fontSize: 13,
     fontWeight: 'bold',
     textAlign: 'center',
   },
   likeBadge: {
     position: 'absolute',
-    top: -5,
-    right: -5,
-    backgroundColor: COLORS.white,
-    borderRadius: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    top: -8,
+    right: -8,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
   },
   likeBadgeText: {
     fontSize: 10,
@@ -348,109 +394,91 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   spinButton: {
-    backgroundColor: COLORS.secondary,
     margin: 20,
-    padding: 20,
-    borderRadius: 15,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    borderRadius: 24,
+    padding: 30,
+    width: '100%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 16,
+  },
+  modalTitle: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+    textAlign: 'center',
+    marginBottom: 28,
+  },
+  pairContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 28,
+  },
+  playerAvatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
   },
-  spinButtonDisabled: {
-    backgroundColor: COLORS.textLight,
-  },
-  spinButtonText: {
-    color: COLORS.white,
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    backgroundColor: COLORS.white,
-    borderRadius: 20,
-    padding: 30,
-    width: '100%',
-    maxWidth: 400,
-  },
-  modalTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-    textAlign: 'center',
-    marginBottom: 25,
-  },
-  pairContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 25,
-  },
-  playerCard: {
-    alignItems: 'center',
-  },
-  playerAvatar: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
   playerAvatarText: {
-    color: COLORS.white,
-    fontSize: 32,
+    color: '#ffffff',
+    fontSize: 36,
     fontWeight: 'bold',
-  },
-  playerCardName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
   },
   heartIcon: {
-    fontSize: 40,
+    fontSize: 44,
     marginHorizontal: 20,
   },
   actionPrompt: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
     color: COLORS.text,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   actionsContainer: {
-    gap: 12,
+    gap: 14,
   },
   actionButton: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  actionButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
-    borderRadius: 12,
-    gap: 10,
-  },
-  kissButton: {
-    backgroundColor: COLORS.primary,
-  },
-  likeButton: {
-    backgroundColor: COLORS.success,
-  },
-  ignoreButton: {
-    backgroundColor: COLORS.textLight,
+    padding: 18,
+    gap: 12,
   },
   actionEmoji: {
-    fontSize: 24,
+    fontSize: 26,
   },
   actionButtonText: {
-    color: COLORS.white,
+    color: '#ffffff',
     fontSize: 18,
     fontWeight: 'bold',
   },
