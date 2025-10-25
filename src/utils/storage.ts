@@ -104,6 +104,8 @@ export interface Settings {
   spinDuration: number;
   showTimer: boolean;
   timerDuration: number;
+  theme: 'romantic' | 'party' | 'ocean' | 'sunset' | 'galaxy' | 'forest' | 'neon' | 'pastel';
+  bottleColor: 'red' | 'green' | 'blue' | 'purple' | 'gold';
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -114,6 +116,8 @@ export const DEFAULT_SETTINGS: Settings = {
   spinDuration: 4000,
   showTimer: false,
   timerDuration: 60,
+  theme: 'romantic',
+  bottleColor: 'red',
 };
 
 export const saveSettings = async (settings: Settings): Promise<void> => {

@@ -4,11 +4,10 @@ import { Player } from '../types';
 import { Settings, DEFAULT_SETTINGS } from '../utils/storage';
 import { COLORS } from '../constants/colors';
 import { getWishesByCategories } from '../constants/wishes';
-import BottlePremium from '../components/BottlePremium';
-import GradientBackground from '../components/GradientBackground';
+import Bottle3D from '../components/Bottle3D';
+import AnimatedBackground from '../components/AnimatedBackground';
 import GradientButton from '../components/GradientButton';
 import ConfettiExplosion from '../components/ConfettiExplosion';
-import FloatingParticles from '../components/FloatingParticles';
 import CountdownTimer from '../components/CountdownTimer';
 import LinearGradient from 'react-native-linear-gradient';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
@@ -131,8 +130,7 @@ export default function WishesGameScreenPremium({ players, onBack, settings = DE
   };
 
   return (
-    <GradientBackground colors={['#fff5f5', '#ffe8e8', '#ffd4d4']}>
-      <FloatingParticles count={15} color="rgba(255, 107, 107, 0.3)" size={6} />
+    <AnimatedBackground theme={settings.theme}>
       {showConfetti && <ConfettiExplosion count={60} duration={3000} />}
 
       <View style={styles.container}>
@@ -162,7 +160,12 @@ export default function WishesGameScreenPremium({ players, onBack, settings = DE
           <View style={styles.playersCircle}>{renderPlayers()}</View>
 
           <View style={styles.bottleContainer}>
-            <BottlePremium rotation={rotationValue} isSpinning={isSpinning} />
+            <Bottle3D
+              rotation={rotationValue}
+              isSpinning={isSpinning}
+              size={200}
+              color={settings.bottleColor}
+            />
           </View>
         </View>
 
@@ -222,7 +225,7 @@ export default function WishesGameScreenPremium({ players, onBack, settings = DE
           </View>
         </Modal>
       </View>
-    </GradientBackground>
+    </AnimatedBackground>
   );
 }
 

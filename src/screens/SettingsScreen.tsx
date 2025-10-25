@@ -261,6 +261,84 @@ export default function SettingsScreen({ onBack, onSettingsChange }: Props) {
             </View>
           </View>
 
+          {/* Тема оформления */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>🎨 Тема оформления</Text>
+            <Text style={styles.sectionDescription}>
+              Выберите визуальный стиль игры
+            </Text>
+            <View style={styles.themesGrid}>
+              {[
+                { label: 'Романтика', value: 'romantic', colors: ['#ff6b9d', '#ff85a8'], emoji: '💕' },
+                { label: 'Вечеринка', value: 'party', colors: ['#ffd43b', '#ffe066'], emoji: '🎉' },
+                { label: 'Океан', value: 'ocean', colors: ['#4ecdc4', '#6bcfeb'], emoji: '🌊' },
+                { label: 'Закат', value: 'sunset', colors: ['#ff9068', '#ffc078'], emoji: '🌅' },
+                { label: 'Галактика', value: 'galaxy', colors: ['#533483', '#8e24aa'], emoji: '🌌' },
+                { label: 'Лес', value: 'forest', colors: ['#51cf66', '#8ce99a'], emoji: '🌲' },
+                { label: 'Неон', value: 'neon', colors: ['#8e24aa', '#ab47bc'], emoji: '✨' },
+                { label: 'Пастель', value: 'pastel', colors: ['#f48fb1', '#f8bbd0'], emoji: '🎀' },
+              ].map(theme => (
+                <TouchableOpacity
+                  key={theme.value}
+                  style={styles.themeCard}
+                  onPress={() => {
+                    ReactNativeHapticFeedback.trigger('impactMedium');
+                    setSettings({ ...settings, theme: theme.value as any });
+                  }}
+                >
+                  <LinearGradient
+                    colors={theme.colors}
+                    style={[
+                      styles.themeGradient,
+                      settings.theme === theme.value && styles.themeSelected,
+                    ]}
+                  >
+                    <Text style={styles.themeEmoji}>{theme.emoji}</Text>
+                    <Text style={styles.themeText}>{theme.label}</Text>
+                    {settings.theme === theme.value && (
+                      <View style={styles.themeCheckmark}>
+                        <Text style={styles.themeCheckmarkText}>✓</Text>
+                      </View>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Цвет бутылочки */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>🍾 Цвет бутылочки</Text>
+            <View style={styles.bottleColors}>
+              {[
+                { label: 'Красная', value: 'red', colors: ['#ff6b6b', '#ee5a6f'] },
+                { label: 'Зеленая', value: 'green', colors: ['#51cf66', '#40c057'] },
+                { label: 'Синяя', value: 'blue', colors: ['#4a90e2', '#357abd'] },
+                { label: 'Фиолетовая', value: 'purple', colors: ['#cc5de8', '#be4bdb'] },
+                { label: 'Золотая', value: 'gold', colors: ['#ffd43b', '#fcc419'] },
+              ].map(color => (
+                <TouchableOpacity
+                  key={color.value}
+                  style={styles.bottleColorButton}
+                  onPress={() => {
+                    ReactNativeHapticFeedback.trigger('impactLight');
+                    setSettings({ ...settings, bottleColor: color.value as any });
+                  }}
+                >
+                  <LinearGradient
+                    colors={color.colors}
+                    style={[
+                      styles.bottleColorGradient,
+                      settings.bottleColor === color.value && styles.bottleColorSelected,
+                    ]}
+                  >
+                    <Text style={styles.bottleColorText}>{color.label}</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
           {/* Действия */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>🗑️ Опасная зона</Text>
@@ -438,6 +516,87 @@ const styles = StyleSheet.create({
   },
   speedTextInactive: {
     color: '#6b7280',
+  },
+  themesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  themeCard: {
+    width: '47%',
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  themeGradient: {
+    padding: 16,
+    alignItems: 'center',
+    minHeight: 90,
+    justifyContent: 'center',
+  },
+  themeSelected: {
+    borderWidth: 3,
+    borderColor: '#ffffff',
+  },
+  themeEmoji: {
+    fontSize: 28,
+    marginBottom: 8,
+  },
+  themeText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#ffffff',
+    textAlign: 'center',
+  },
+  themeCheckmark: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#ffffff',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  themeCheckmarkText: {
+    color: '#10b981',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  bottleColors: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  bottleColorButton: {
+    flex: 1,
+    minWidth: '30%',
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  bottleColorGradient: {
+    padding: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bottleColorSelected: {
+    borderWidth: 3,
+    borderColor: '#ffffff',
+  },
+  bottleColorText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#ffffff',
   },
   dangerButton: {
     padding: 16,

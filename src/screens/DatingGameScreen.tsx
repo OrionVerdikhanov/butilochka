@@ -3,11 +3,10 @@ import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing, Modal } fro
 import { Player } from '../types';
 import { Settings, DEFAULT_SETTINGS } from '../utils/storage';
 import { COLORS } from '../constants/colors';
-import BottlePremium from '../components/BottlePremium';
-import GradientBackground from '../components/GradientBackground';
+import Bottle3D from '../components/Bottle3D';
+import AnimatedBackground from '../components/AnimatedBackground';
 import GradientButton from '../components/GradientButton';
 import ConfettiExplosion from '../components/ConfettiExplosion';
-import FloatingParticles from '../components/FloatingParticles';
 import LinearGradient from 'react-native-linear-gradient';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
@@ -161,8 +160,7 @@ export default function DatingGameScreenPremium({ players, onBack, settings = DE
   };
 
   return (
-    <GradientBackground colors={['#fff0f6', '#ffe0f0', '#ffc9ea']}>
-      <FloatingParticles count={15} color="rgba(255, 105, 180, 0.3)" size={6} />
+    <AnimatedBackground theme={settings.theme}>
       {showConfetti && <ConfettiExplosion count={80} duration={3000} />}
 
       <View style={styles.container}>
@@ -198,7 +196,12 @@ export default function DatingGameScreenPremium({ players, onBack, settings = DE
           <View style={styles.playersCircle}>{renderPlayers()}</View>
 
           <View style={styles.bottleContainer}>
-            <BottlePremium rotation={rotationValue} isSpinning={isSpinning} />
+            <Bottle3D
+              rotation={rotationValue}
+              isSpinning={isSpinning}
+              size={200}
+              color={settings.bottleColor}
+            />
           </View>
         </View>
 
@@ -294,7 +297,7 @@ export default function DatingGameScreenPremium({ players, onBack, settings = DE
           </View>
         </Modal>
       </View>
-    </GradientBackground>
+    </AnimatedBackground>
   );
 }
 
