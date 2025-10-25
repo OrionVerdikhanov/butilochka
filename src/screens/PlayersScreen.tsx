@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,10 @@ import {
 } from 'react-native';
 import { Player, Gender } from '../types';
 import { COLORS } from '../constants/colors';
+import GradientBackground from '../components/GradientBackground';
+import GradientButton from '../components/GradientButton';
+import { savePlayers, loadPlayers } from '../utils/storage';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 interface Props {
   onContinue: (players: Player[]) => void;
@@ -19,6 +23,34 @@ export default function PlayersScreen({ onContinue }: Props) {
   const [players, setPlayers] = useState<Player[]>([]);
   const [name, setName] = useState('');
   const [selectedGender, setSelectedGender] = useState<Gender>('M');
+
+  // Загрузка сохраненных игроков
+  useEffect(() => {
+    const loadSavedPlayers = async () => {
+      const saved = await loadPlayers();
+      if (saved.length > 0) {
+        Alert.alert(
+          'Загрузить игроков?',
+          `Найдено ${saved.length} сохраненных игроков. Загрузить их?`,
+          [
+            { text: 'Нет', style: 'cancel' },
+            {
+              text: 'Да',
+              onPress: () => setPlayers(saved),
+            },
+          ]
+        );
+      }
+    };
+    loadSavedPlayers();
+  }, []);
+
+  // Автосохранение при изменении
+  useEffect(() => {
+    if (players.length > 0) {
+      savePlayers(players);
+    }
+  }, [players]);
 
   const addPlayer = () => {
     if (!name.trim()) {
@@ -33,11 +65,13 @@ export default function PlayersScreen({ onContinue }: Props) {
       likes: 0,
     };
 
+    ReactNativeHapticFeedback.trigger('impactLight');
     setPlayers([...players, newPlayer]);
     setName('');
   };
 
   const removePlayer = (id: string) => {
+    ReactNativeHapticFeedback.trigger('impactMedium');
     setPlayers(players.filter(p => p.id !== id));
   };
 
@@ -46,187 +80,277 @@ export default function PlayersScreen({ onContinue }: Props) {
       Alert.alert('Ошибка', 'Добавьте минимум 2 игрока');
       return;
     }
+    savePlayers(players);
     onContinue(players);
   };
 
+  const clearAllPlayers = () => {
+    Alert.alert(
+      'Удалить всех?',
+      'Вы уверены, что хотите удалить всех игроков?',
+      [
+        { text: 'Отмена', style: 'cancel' },
+        {
+          text: 'Удалить',
+          style: 'destructive',
+          onPress: () => {
+            ReactNativeHapticFeedback.trigger('notificationWarning');
+            setPlayers([]);
+          },
+        },
+      ]
+    );
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Добавление игроков</Text>
+    <GradientBackground colors={['#fff5f5', '#ffe8e8', '#ffd4d4']}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Добавление игроков</Text>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Имя игрока"
-          value={name}
-          onChangeText={setName}
-          placeholderTextColor={COLORS.textLight}
-        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Имя игрока"
+            value={name}
+            onChangeText={setName}
+            placeholderTextColor={COLORS.textLight}
+            onSubmitEditing={addPlayer}
+            returnKeyType="done"
+          />
 
-        <View style={styles.genderContainer}>
-          <TouchableOpacity
-            style={[
-              styles.genderButton,
-              selectedGender === 'M' && styles.genderButtonMale,
-            ]}
-            onPress={() => setSelectedGender('M')}
-          >
-            <Text style={[
-              styles.genderButtonText,
-              selectedGender === 'M' && styles.genderButtonTextActive,
-            ]}>
-              М
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.genderButton,
-              selectedGender === 'F' && styles.genderButtonFemale,
-            ]}
-            onPress={() => setSelectedGender('F')}
-          >
-            <Text style={[
-              styles.genderButtonText,
-              selectedGender === 'F' && styles.genderButtonTextActive,
-            ]}>
-              Ж
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity style={styles.addButton} onPress={addPlayer}>
-          <Text style={styles.addButtonText}>Добавить</Text>
-        </TouchableOpacity>
-      </View>
-
-      <FlatList
-        data={players}
-        keyExtractor={item => item.id}
-        style={styles.list}
-        renderItem={({ item }) => (
-          <View style={styles.playerItem}>
-            <View style={[
-              styles.genderIndicator,
-              { backgroundColor: item.gender === 'M' ? COLORS.male : COLORS.female }
-            ]} />
-            <Text style={styles.playerName}>{item.name}</Text>
-            <Text style={styles.playerGender}>({item.gender})</Text>
+          <View style={styles.genderContainer}>
             <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => removePlayer(item.id)}
+              style={[
+                styles.genderButton,
+                selectedGender === 'M' && styles.genderButtonMaleActive,
+              ]}
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('selection');
+                setSelectedGender('M');
+              }}
             >
-              <Text style={styles.removeButtonText}>✕</Text>
+              <Text
+                style={[
+                  styles.genderButtonText,
+                  selectedGender === 'M' && styles.genderButtonTextActive,
+                ]}
+              >
+                Мужчина
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.genderButton,
+                selectedGender === 'F' && styles.genderButtonFemaleActive,
+              ]}
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('selection');
+                setSelectedGender('F');
+              }}
+            >
+              <Text
+                style={[
+                  styles.genderButtonText,
+                  selectedGender === 'F' && styles.genderButtonTextActive,
+                ]}
+              >
+                Женщина
+              </Text>
             </TouchableOpacity>
           </View>
-        )}
-      />
 
-      {players.length >= 2 && (
-        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-          <Text style={styles.continueButtonText}>
-            Продолжить ({players.length} игроков)
+          <GradientButton
+            title="+ Добавить игрока"
+            onPress={addPlayer}
+            colors={['#4ecdc4', '#44a3d9']}
+          />
+        </View>
+
+        <View style={styles.listHeader}>
+          <Text style={styles.listTitle}>
+            Игроки: {players.length}
           </Text>
-        </TouchableOpacity>
-      )}
-    </View>
+          {players.length > 0 && (
+            <TouchableOpacity onPress={clearAllPlayers}>
+              <Text style={styles.clearButton}>Очистить все</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <FlatList
+          data={players}
+          keyExtractor={item => item.id}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          renderItem={({ item, index }) => (
+            <View style={styles.playerItem}>
+              <View style={styles.playerNumber}>
+                <Text style={styles.playerNumberText}>{index + 1}</Text>
+              </View>
+              <View
+                style={[
+                  styles.genderIndicator,
+                  {
+                    backgroundColor:
+                      item.gender === 'M' ? COLORS.male : COLORS.female,
+                  },
+                ]}
+              />
+              <Text style={styles.playerName}>{item.name}</Text>
+              <Text style={styles.playerGender}>
+                ({item.gender === 'M' ? 'М' : 'Ж'})
+              </Text>
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => removePlayer(item.id)}
+              >
+                <Text style={styles.removeButtonText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>
+                Добавьте минимум 2 игрока для начала игры
+              </Text>
+            </View>
+          }
+        />
+
+        {players.length >= 2 && (
+          <GradientButton
+            title={`Продолжить (${players.length} игроков)`}
+            onPress={handleContinue}
+            colors={['#51cf66', '#37b24d']}
+            style={styles.continueButton}
+          />
+        )}
+      </View>
+    </GradientBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
     padding: 20,
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     color: COLORS.primary,
     textAlign: 'center',
     marginTop: 40,
     marginBottom: 30,
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   inputContainer: {
     backgroundColor: COLORS.white,
     padding: 20,
-    borderRadius: 15,
+    borderRadius: 20,
     marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  input: {
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    marginBottom: 15,
+    backgroundColor: '#fafafa',
+  },
+  genderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+    gap: 10,
+  },
+  genderButton: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    backgroundColor: '#fafafa',
+  },
+  genderButtonMaleActive: {
+    backgroundColor: COLORS.male,
+    borderColor: COLORS.male,
+  },
+  genderButtonFemaleActive: {
+    backgroundColor: COLORS.female,
+    borderColor: COLORS.female,
+  },
+  genderButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  genderButtonTextActive: {
+    color: COLORS.white,
+  },
+  listHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  listTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.text,
+  },
+  clearButton: {
+    color: COLORS.error,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  list: {
+    flex: 1,
+  },
+  listContent: {
+    gap: 10,
+  },
+  playerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    padding: 16,
+    borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 10,
-    padding: 15,
-    fontSize: 16,
-    marginBottom: 15,
-  },
-  genderContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 15,
-  },
-  genderButton: {
-    flex: 1,
-    padding: 15,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: COLORS.border,
+  playerNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.background,
     alignItems: 'center',
-    marginHorizontal: 5,
+    justifyContent: 'center',
+    marginRight: 12,
   },
-  genderButtonMale: {
-    backgroundColor: COLORS.male,
-    borderColor: COLORS.male,
-  },
-  genderButtonFemale: {
-    backgroundColor: COLORS.female,
-    borderColor: COLORS.female,
-  },
-  genderButtonText: {
-    fontSize: 18,
+  playerNumberText: {
+    fontSize: 14,
     fontWeight: 'bold',
     color: COLORS.text,
   },
-  genderButtonTextActive: {
-    color: COLORS.white,
-  },
-  addButton: {
-    backgroundColor: COLORS.primary,
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  addButtonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  list: {
-    flex: 1,
-  },
-  playerItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
   genderIndicator: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 10,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 12,
   },
   playerName: {
     flex: 1,
@@ -237,12 +361,12 @@ const styles = StyleSheet.create({
   playerGender: {
     fontSize: 14,
     color: COLORS.textLight,
-    marginRight: 10,
+    marginRight: 12,
   },
   removeButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: COLORS.error,
     alignItems: 'center',
     justifyContent: 'center',
@@ -252,16 +376,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  continueButton: {
-    backgroundColor: COLORS.success,
-    padding: 18,
-    borderRadius: 10,
+  emptyContainer: {
+    padding: 40,
     alignItems: 'center',
-    marginTop: 10,
   },
-  continueButtonText: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: 'bold',
+  emptyText: {
+    fontSize: 16,
+    color: COLORS.textLight,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  continueButton: {
+    marginTop: 16,
   },
 });

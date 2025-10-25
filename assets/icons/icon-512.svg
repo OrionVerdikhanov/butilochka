@@ -1,0 +1,21 @@
+
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bottleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ee5a6f;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="256" r="256" fill="url(#bottleGradient)"/>
+  <g transform="translate(256,256)">
+    <!-- Горлышко бутылки -->
+    <rect x="-40.96" y="-179.2" width="81.92" height="153.6"
+          fill="#ffffff" rx="40.96"/>
+    <!-- Тело бутылки -->
+    <ellipse cx="0" cy="25.6" rx="92.16" ry="153.6"
+             fill="#ffffff"/>
+    <!-- Блик -->
+    <ellipse cx="40.96" cy="-51.2" rx="30.72" ry="76.8"
+             fill="#ffffff" opacity="0.5"/>
+  </g>
+</svg>
