@@ -5,6 +5,17 @@ export interface Player {
   name: string;
   gender: Gender;
   likes: number;
+  wishesCompleted?: number;
+  actions?: GameAction[];
+}
+
+export interface GameAction {
+  id: string;
+  timestamp: number;
+  type: 'wish' | 'kiss' | 'like' | 'ignore';
+  fromPlayer: string;
+  toPlayer?: string;
+  wish?: string;
 }
 
 export type GameMode = 'wishes' | 'dating';
@@ -22,3 +33,19 @@ export interface SpinResult {
   target: Player;
   wish?: string;
 }
+
+export interface GameSettings {
+  enabledCategories: import('../constants/wishes').WishCategory[];
+  soundEnabled: boolean;
+  spinDuration: number; // in milliseconds
+  showTimer: boolean;
+  timerDuration: number; // in seconds
+}
+
+export const DEFAULT_SETTINGS: GameSettings = {
+  enabledCategories: ['all'],
+  soundEnabled: true,
+  spinDuration: 4000,
+  showTimer: false,
+  timerDuration: 60,
+};

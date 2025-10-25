@@ -100,7 +100,21 @@ export interface Settings {
   vibrationEnabled: boolean;
   soundEnabled: boolean;
   useCustomWishes: boolean;
+  enabledCategories: import('../constants/wishes').WishCategory[];
+  spinDuration: number;
+  showTimer: boolean;
+  timerDuration: number;
 }
+
+export const DEFAULT_SETTINGS: Settings = {
+  vibrationEnabled: true,
+  soundEnabled: true,
+  useCustomWishes: false,
+  enabledCategories: ['all'],
+  spinDuration: 4000,
+  showTimer: false,
+  timerDuration: 60,
+};
 
 export const saveSettings = async (settings: Settings): Promise<void> => {
   try {
@@ -113,20 +127,10 @@ export const saveSettings = async (settings: Settings): Promise<void> => {
 export const loadSettings = async (): Promise<Settings> => {
   try {
     const settingsJson = await AsyncStorage.getItem(KEYS.SETTINGS);
-    return settingsJson
-      ? JSON.parse(settingsJson)
-      : {
-          vibrationEnabled: true,
-          soundEnabled: true,
-          useCustomWishes: false,
-        };
+    return settingsJson ? JSON.parse(settingsJson) : DEFAULT_SETTINGS;
   } catch (error) {
     console.error('Error loading settings:', error);
-    return {
-      vibrationEnabled: true,
-      soundEnabled: true,
-      useCustomWishes: false,
-    };
+    return DEFAULT_SETTINGS;
   }
 };
 

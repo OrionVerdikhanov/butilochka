@@ -1,22 +1,25 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing, Modal } from 'react-native';
 import { Player } from '../types';
+import { Settings, DEFAULT_SETTINGS } from '../utils/storage';
 import { COLORS } from '../constants/colors';
-import { WISHES } from '../constants/wishes';
+import { getWishesByCategories } from '../constants/wishes';
 import BottlePremium from '../components/BottlePremium';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import ConfettiExplosion from '../components/ConfettiExplosion';
 import FloatingParticles from '../components/FloatingParticles';
+import CountdownTimer from '../components/CountdownTimer';
 import LinearGradient from 'react-native-linear-gradient';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 interface Props {
   players: Player[];
   onBack: () => void;
+  settings?: Settings;
 }
 
-export default function WishesGameScreenPremium({ players, onBack }: Props) {
+export default function WishesGameScreenPremium({ players, onBack, settings = DEFAULT_SETTINGS }: Props) {
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentSpinnerIndex, setCurrentSpinnerIndex] = useState(0);
   const [targetPlayerIndex, setTargetPlayerIndex] = useState<number | null>(null);
@@ -29,7 +32,9 @@ export default function WishesGameScreenPremium({ players, onBack }: Props) {
   const spinBottle = () => {
     if (isSpinning) return;
 
-    ReactNativeHapticFeedback.trigger('impactHeavy');
+    if (settings.vibrationEnabled) {
+      ReactNativeHapticFeedback.trigger('impactHeavy');
+    }
     setIsSpinning(true);
     setShowResult(false);
     setShowConfetti(false);
@@ -46,15 +51,19 @@ export default function WishesGameScreenPremium({ players, onBack }: Props) {
       targetIndex = (targetIndex + 1) % players.length;
     }
 
-    const randomWish = WISHES[Math.floor(Math.random() * WISHES.length)];
+    // Get wishes based on settings
+    const availableWishes = getWishesByCategories(settings.enabledCategories);
+    const randomWish = availableWishes[Math.floor(Math.random() * availableWishes.length)];
 
     Animated.timing(rotationValue, {
       toValue: totalRotation,
-      duration: 4000,
+      duration: settings.spinDuration,
       easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
       useNativeDriver: true,
     }).start(() => {
-      ReactNativeHapticFeedback.trigger('notificationSuccess');
+      if (settings.vibrationEnabled) {
+        ReactNativeHapticFeedback.trigger('notificationSuccess');
+      }
       setIsSpinning(false);
       setTargetPlayerIndex(targetIndex);
       setCurrentWish(randomWish);
@@ -64,7 +73,9 @@ export default function WishesGameScreenPremium({ players, onBack }: Props) {
   };
 
   const nextTurn = () => {
-    ReactNativeHapticFeedback.trigger('impactMedium');
+    if (settings.vibrationEnabled) {
+      ReactNativeHapticFeedback.trigger('impactMedium');
+    }
     setShowResult(false);
     setShowConfetti(false);
     setCurrentSpinnerIndex((currentSpinnerIndex + 1) % players.length);
@@ -190,6 +201,17 @@ export default function WishesGameScreenPremium({ players, onBack }: Props) {
                 <Text style={styles.wishLabel}>💫 Желание:</Text>
                 <Text style={styles.wishText}>{currentWish}</Text>
               </LinearGradient>
+
+              {settings.showTimer && showResult && (
+                <CountdownTimer
+                  duration={settings.timerDuration}
+                  onComplete={() => {
+                    if (settings.vibrationEnabled) {
+                      ReactNativeHapticFeedback.trigger('notificationWarning');
+                    }
+                  }}
+                />
+              )}
 
               <GradientButton
                 title="Следующий ход ➡"

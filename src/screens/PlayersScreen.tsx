@@ -17,9 +17,10 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 interface Props {
   onContinue: (players: Player[]) => void;
+  onOpenSettings?: () => void;
 }
 
-export default function PlayersScreen({ onContinue }: Props) {
+export default function PlayersScreen({ onContinue, onOpenSettings }: Props) {
   const [players, setPlayers] = useState<Player[]>([]);
   const [name, setName] = useState('');
   const [selectedGender, setSelectedGender] = useState<Gender>('M');
@@ -105,7 +106,20 @@ export default function PlayersScreen({ onContinue }: Props) {
   return (
     <GradientBackground colors={['#fff5f5', '#ffe8e8', '#ffd4d4']}>
       <View style={styles.container}>
-        <Text style={styles.title}>Добавление игроков</Text>
+        <View style={styles.headerContainer}>
+          <Text style={styles.title}>Добавление игроков</Text>
+          {onOpenSettings && (
+            <TouchableOpacity
+              style={styles.settingsButton}
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('impactMedium');
+                onOpenSettings();
+              }}
+            >
+              <Text style={styles.settingsButtonText}>⚙️</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
         <View style={styles.inputContainer}>
           <TextInput
@@ -236,16 +250,38 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  headerContainer: {
+    marginTop: 40,
+    marginBottom: 30,
+    alignItems: 'center',
+  },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     color: COLORS.primary,
     textAlign: 'center',
-    marginTop: 40,
-    marginBottom: 30,
     textShadowColor: 'rgba(0, 0, 0, 0.1)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
+  },
+  settingsButton: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  settingsButtonText: {
+    fontSize: 24,
   },
   inputContainer: {
     backgroundColor: COLORS.white,

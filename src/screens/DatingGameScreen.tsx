@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing, Modal } from 'react-native';
 import { Player } from '../types';
+import { Settings, DEFAULT_SETTINGS } from '../utils/storage';
 import { COLORS } from '../constants/colors';
 import BottlePremium from '../components/BottlePremium';
 import GradientBackground from '../components/GradientBackground';
@@ -13,9 +14,10 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 interface Props {
   players: Player[];
   onBack: () => void;
+  settings?: Settings;
 }
 
-export default function DatingGameScreenPremium({ players, onBack }: Props) {
+export default function DatingGameScreenPremium({ players, onBack, settings = DEFAULT_SETTINGS }: Props) {
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentSpinnerIndex, setCurrentSpinnerIndex] = useState(0);
   const [targetPlayerIndex, setTargetPlayerIndex] = useState<number | null>(null);
@@ -35,7 +37,9 @@ export default function DatingGameScreenPremium({ players, onBack }: Props) {
 
     if (oppositeGenderPlayers.length === 0) return;
 
-    ReactNativeHapticFeedback.trigger('impactHeavy');
+    if (settings.vibrationEnabled) {
+      ReactNativeHapticFeedback.trigger('impactHeavy');
+    }
     setIsSpinning(true);
     setShowResult(false);
     setShowConfetti(false);
@@ -53,11 +57,13 @@ export default function DatingGameScreenPremium({ players, onBack }: Props) {
 
     Animated.timing(rotationValue, {
       toValue: totalRotation,
-      duration: 4000,
+      duration: settings.spinDuration,
       easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
       useNativeDriver: true,
     }).start(() => {
-      ReactNativeHapticFeedback.trigger('notificationSuccess');
+      if (settings.vibrationEnabled) {
+        ReactNativeHapticFeedback.trigger('notificationSuccess');
+      }
       setIsSpinning(false);
       setTargetPlayerIndex(targetIndex);
       setShowResult(true);
@@ -66,7 +72,9 @@ export default function DatingGameScreenPremium({ players, onBack }: Props) {
 
   const handleAction = (action: 'kiss' | 'ignore' | 'like') => {
     if (action === 'like' && targetPlayerIndex !== null) {
-      ReactNativeHapticFeedback.trigger('notificationSuccess');
+      if (settings.vibrationEnabled) {
+        ReactNativeHapticFeedback.trigger('notificationSuccess');
+      }
       setShowConfetti(true);
       const updatedPlayers = [...playersState];
       updatedPlayers[targetPlayerIndex].likes += 1;
@@ -75,7 +83,9 @@ export default function DatingGameScreenPremium({ players, onBack }: Props) {
 
       setTimeout(() => nextTurn(), 500);
     } else if (action === 'kiss') {
-      ReactNativeHapticFeedback.trigger('notificationWarning');
+      if (settings.vibrationEnabled) {
+        ReactNativeHapticFeedback.trigger('notificationWarning');
+      }
       nextTurn();
     } else {
       nextTurn();
