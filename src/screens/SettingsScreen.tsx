@@ -1,16 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import GradientButton from '../components/GradientButton';
 import { Settings, saveSettings, loadSettings, DEFAULT_SETTINGS, clearAllData } from '../utils/storage';
 import { WishCategory, CATEGORY_NAMES, CATEGORY_EMOJIS } from '../constants/wishes';
 import { COLORS } from '../constants/colors';
+import SettingSection from '../components/settings/SettingSection';
+import CategoryToggle from '../components/settings/CategoryToggle';
+import ToggleSetting from '../components/settings/ToggleSetting';
+import ColorSelector from '../components/settings/ColorSelector';
 
 interface Props {
   onBack: () => void;
   onSettingsChange: (settings: Settings) => void;
 }
+
+const categories: WishCategory[] = ['all', 'funny', 'romantic', 'extreme', 'creative', 'social'];
+
+const getCategoryColor = (category: WishCategory): string[] => {
+  const colorMap: Record<WishCategory, string[]> = {
+    all: ['#667eea', '#764ba2'],
+    funny: ['#f093fb', '#f5576c'],
+    romantic: ['#fa709a', '#fee140'],
+    extreme: ['#ff6b6b', '#ee5a6f'],
+    creative: ['#4facfe', '#00f2fe'],
+    social: ['#43e97b', '#38f9d7'],
+  };
+  return colorMap[category] || colorMap.all;
+};
+
+const THEME_OPTIONS = [
+  { value: 'default', label: 'По умолчанию' },
+  { value: 'sunset', label: 'Закат' },
+  { value: 'ocean', label: 'Океан' },
+  { value: 'forest', label: 'Лес' },
+  { value: 'night', label: 'Ночь' },
+  { value: 'candy', label: 'Конфеты' },
+  { value: 'fire', label: 'Огонь' },
+  { value: 'ice', label: 'Лёд' },
+];
+
+const BOTTLE_COLORS = [
+  { value: '#8B4513', label: 'Коричневый' },
+  { value: '#228B22', label: 'Зелёный' },
+  { value: '#1E90FF', label: 'Синий' },
+  { value: '#DC143C', label: 'Красный' },
+  { value: '#32CD32', label: 'Салатовый' },
+];
+
+const SPEED_OPTIONS = [
+  { label: 'Медленно', value: 6000 },
+  { label: 'Нормально', value: 4000 },
+  { label: 'Быстро', value: 2000 },
+];
+
+const TIMER_OPTIONS = [
+  { label: '30 сек', value: 30000 },
+  { label: '60 сек', value: 60000 },
+  { label: '90 сек', value: 90000 },
+  { label: '120 сек', value: 120000 },
+];
 
 export default function SettingsScreen({ onBack, onSettingsChange }: Props) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
@@ -75,27 +125,6 @@ export default function SettingsScreen({ onBack, onSettingsChange }: Props) {
     setSettings({ ...settings, enabledCategories: newCategories });
   };
 
-  const categories: WishCategory[] = ['all', 'funny', 'romantic', 'extreme', 'creative', 'social'];
-
-  const getCategoryColor = (category: WishCategory): string[] => {
-    switch (category) {
-      case 'all':
-        return ['#667eea', '#764ba2'];
-      case 'funny':
-        return ['#f093fb', '#f5576c'];
-      case 'romantic':
-        return ['#fa709a', '#fee140'];
-      case 'extreme':
-        return ['#ff6b6b', '#ee5a6f'];
-      case 'creative':
-        return ['#4facfe', '#00f2fe'];
-      case 'social':
-        return ['#43e97b', '#38f9d7'];
-      default:
-        return ['#667eea', '#764ba2'];
-    }
-  };
-
   return (
     <LinearGradient colors={['#f8f9ff', '#f0f2ff', '#e8eaff']} style={styles.mainContainer}>
       <View style={styles.container}>
@@ -108,254 +137,158 @@ export default function SettingsScreen({ onBack, onSettingsChange }: Props) {
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Категории желаний */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🎯 Категории желаний</Text>
-            <Text style={styles.sectionDescription}>
+          <SettingSection
+            title="Категории желаний"
+            emoji="🎯"
+            colors={['#667eea', '#764ba2']}
+          >
+            <Text style={styles.description}>
               Выберите какие желания будут использоваться в игре
             </Text>
-
-            <View style={styles.categoriesGrid}>
+            <View style={styles.grid}>
               {categories.map(category => {
                 const isEnabled = settings.enabledCategories.includes(category) ||
                                  settings.enabledCategories.includes('all');
-                const isAll = category === 'all';
-                const isAllSelected = settings.enabledCategories.includes('all');
 
                 return (
-                  <TouchableOpacity
+                  <CategoryToggle
                     key={category}
-                    style={styles.categoryCard}
-                    onPress={() => toggleCategory(category)}
-                    activeOpacity={0.7}
-                  >
-                    <LinearGradient
-                      colors={
-                        isEnabled || (isAllSelected && !isAll)
-                          ? getCategoryColor(category)
-                          : ['#e9ecef', '#dee2e6']
-                      }
-                      style={[
-                        styles.categoryGradient,
-                        (isEnabled || (isAllSelected && !isAll)) && styles.categoryEnabled,
-                      ]}
-                    >
-                      <Text style={styles.categoryEmoji}>{CATEGORY_EMOJIS[category]}</Text>
-                      <Text
-                        style={[
-                          styles.categoryText,
-                          !(isEnabled || (isAllSelected && !isAll)) && styles.categoryTextDisabled,
-                        ]}
-                      >
-                        {CATEGORY_NAMES[category]}
-                      </Text>
-                      {(isEnabled && !isAll) || (isAll && isAllSelected) ? (
-                        <View style={styles.checkmark}>
-                          <Text style={styles.checkmarkText}>✓</Text>
-                        </View>
-                      ) : null}
-                    </LinearGradient>
-                  </TouchableOpacity>
+                    category={category}
+                    name={CATEGORY_NAMES[category]}
+                    emoji={CATEGORY_EMOJIS[category]}
+                    colors={getCategoryColor(category)}
+                    isEnabled={isEnabled}
+                    onToggle={() => toggleCategory(category)}
+                  />
                 );
               })}
             </View>
-          </View>
+          </SettingSection>
 
           {/* Настройки игры */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🎮 Настройки игры</Text>
-
-            <View style={styles.settingRow}>
-              <View style={styles.settingInfo}>
-                <Text style={styles.settingLabel}>Вибрация</Text>
-                <Text style={styles.settingDescription}>
-                  Тактильный отклик при действиях
-                </Text>
-              </View>
-              <Switch
-                value={settings.vibrationEnabled}
-                onValueChange={value => {
-                  ReactNativeHapticFeedback.trigger('impactLight');
-                  setSettings({ ...settings, vibrationEnabled: value });
-                }}
-                trackColor={{ false: '#d1d5db', true: '#667eea' }}
-                thumbColor={settings.vibrationEnabled ? '#ffffff' : '#f3f4f6'}
-              />
-            </View>
-
-            <View style={styles.settingRow}>
-              <View style={styles.settingInfo}>
-                <Text style={styles.settingLabel}>Таймер</Text>
-                <Text style={styles.settingDescription}>
-                  Показывать таймер для выполнения желаний
-                </Text>
-              </View>
-              <Switch
-                value={settings.showTimer}
-                onValueChange={value => {
-                  ReactNativeHapticFeedback.trigger('impactLight');
-                  setSettings({ ...settings, showTimer: value });
-                }}
-                trackColor={{ false: '#d1d5db', true: '#667eea' }}
-                thumbColor={settings.showTimer ? '#ffffff' : '#f3f4f6'}
-              />
-            </View>
-
-            <View style={styles.settingRow}>
-              <View style={styles.settingInfo}>
-                <Text style={styles.settingLabel}>Пользовательские желания</Text>
-                <Text style={styles.settingDescription}>
-                  Использовать свои желания вместо стандартных
-                </Text>
-              </View>
-              <Switch
-                value={settings.useCustomWishes}
-                onValueChange={value => {
-                  ReactNativeHapticFeedback.trigger('impactLight');
-                  setSettings({ ...settings, useCustomWishes: value });
-                }}
-                trackColor={{ false: '#d1d5db', true: '#667eea' }}
-                thumbColor={settings.useCustomWishes ? '#ffffff' : '#f3f4f6'}
-              />
-            </View>
-          </View>
+          <SettingSection
+            title="Настройки игры"
+            emoji="🎮"
+            colors={['#4ecdc4', '#44a3d9']}
+          >
+            <ToggleSetting
+              label="Вибрация"
+              value={settings.vibrationEnabled}
+              onValueChange={value => {
+                ReactNativeHapticFeedback.trigger('impactLight');
+                setSettings({ ...settings, vibrationEnabled: value });
+              }}
+            />
+            <ToggleSetting
+              label="Таймер"
+              value={settings.showTimer}
+              onValueChange={value => {
+                ReactNativeHapticFeedback.trigger('impactLight');
+                setSettings({ ...settings, showTimer: value });
+              }}
+            />
+            <ToggleSetting
+              label="Пользовательские желания"
+              value={settings.useCustomWishes}
+              onValueChange={value => {
+                ReactNativeHapticFeedback.trigger('impactLight');
+                setSettings({ ...settings, useCustomWishes: value });
+              }}
+            />
+          </SettingSection>
 
           {/* Скорость вращения */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>⚡ Скорость вращения</Text>
-            <View style={styles.speedOptions}>
-              {[
-                { label: 'Медленно', value: 6000 },
-                { label: 'Нормально', value: 4000 },
-                { label: 'Быстро', value: 2500 },
-              ].map(option => (
-                <TouchableOpacity
-                  key={option.value}
-                  onPress={() => {
-                    ReactNativeHapticFeedback.trigger('impactMedium');
-                    setSettings({ ...settings, spinDuration: option.value });
-                  }}
-                >
-                  <LinearGradient
-                    colors={
-                      settings.spinDuration === option.value
-                        ? ['#667eea', '#764ba2']
-                        : ['#f3f4f6', '#e5e7eb']
-                    }
-                    style={styles.speedButton}
-                  >
-                    <Text
-                      style={[
-                        styles.speedText,
-                        settings.spinDuration !== option.value && styles.speedTextInactive,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
+          <SettingSection
+            title="Скорость вращения"
+            emoji="⚡"
+            colors={['#ff6b6b', '#ee5a6f']}
+          >
+            <ColorSelector
+              label=""
+              options={SPEED_OPTIONS}
+              selectedValue={settings.spinDuration}
+              onSelect={(value) => {
+                ReactNativeHapticFeedback.trigger('impactLight');
+                setSettings({ ...settings, spinDuration: parseInt(value) });
+              }}
+            />
+          </SettingSection>
+
+          {/* Длительность таймера */}
+          {settings.showTimer && (
+            <SettingSection
+              title="Длительность таймера"
+              emoji="⏱"
+              colors={['#51cf66', '#37b24d']}
+            >
+              <ColorSelector
+                label=""
+                options={TIMER_OPTIONS}
+                selectedValue={settings.timerDuration}
+                onSelect={(value) => {
+                  ReactNativeHapticFeedback.trigger('impactLight');
+                  setSettings({ ...settings, timerDuration: parseInt(value) });
+                }}
+              />
+            </SettingSection>
+          )}
 
           {/* Тема оформления */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🎨 Тема оформления</Text>
-            <Text style={styles.sectionDescription}>
-              Выберите визуальный стиль игры
-            </Text>
-            <View style={styles.themesGrid}>
-              {[
-                { label: 'Романтика', value: 'romantic', colors: ['#ff6b9d', '#ff85a8'], emoji: '💕' },
-                { label: 'Вечеринка', value: 'party', colors: ['#ffd43b', '#ffe066'], emoji: '🎉' },
-                { label: 'Океан', value: 'ocean', colors: ['#4ecdc4', '#6bcfeb'], emoji: '🌊' },
-                { label: 'Закат', value: 'sunset', colors: ['#ff9068', '#ffc078'], emoji: '🌅' },
-                { label: 'Галактика', value: 'galaxy', colors: ['#533483', '#8e24aa'], emoji: '🌌' },
-                { label: 'Лес', value: 'forest', colors: ['#51cf66', '#8ce99a'], emoji: '🌲' },
-                { label: 'Неон', value: 'neon', colors: ['#8e24aa', '#ab47bc'], emoji: '✨' },
-                { label: 'Пастель', value: 'pastel', colors: ['#f48fb1', '#f8bbd0'], emoji: '🎀' },
-              ].map(theme => (
-                <TouchableOpacity
-                  key={theme.value}
-                  style={styles.themeCard}
-                  onPress={() => {
-                    ReactNativeHapticFeedback.trigger('impactMedium');
-                    setSettings({ ...settings, theme: theme.value as any });
-                  }}
-                >
-                  <LinearGradient
-                    colors={theme.colors}
-                    style={[
-                      styles.themeGradient,
-                      settings.theme === theme.value && styles.themeSelected,
-                    ]}
-                  >
-                    <Text style={styles.themeEmoji}>{theme.emoji}</Text>
-                    <Text style={styles.themeText}>{theme.label}</Text>
-                    {settings.theme === theme.value && (
-                      <View style={styles.themeCheckmark}>
-                        <Text style={styles.themeCheckmarkText}>✓</Text>
-                      </View>
-                    )}
-                  </LinearGradient>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
+          <SettingSection
+            title="Тема оформления"
+            emoji="🎨"
+            colors={['#f093fb', '#f5576c']}
+          >
+            <ColorSelector
+              label=""
+              options={THEME_OPTIONS}
+              selectedValue={settings.theme}
+              onSelect={(value) => {
+                ReactNativeHapticFeedback.trigger('impactLight');
+                setSettings({ ...settings, theme: value });
+              }}
+            />
+          </SettingSection>
 
-          {/* Цвет бутылочки */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🍾 Цвет бутылочки</Text>
-            <View style={styles.bottleColors}>
-              {[
-                { label: 'Красная', value: 'red', colors: ['#ff6b6b', '#ee5a6f'] },
-                { label: 'Зеленая', value: 'green', colors: ['#51cf66', '#40c057'] },
-                { label: 'Синяя', value: 'blue', colors: ['#4a90e2', '#357abd'] },
-                { label: 'Фиолетовая', value: 'purple', colors: ['#cc5de8', '#be4bdb'] },
-                { label: 'Золотая', value: 'gold', colors: ['#ffd43b', '#fcc419'] },
-              ].map(color => (
+          {/* Цвет бутылки */}
+          <SettingSection
+            title="Цвет бутылки"
+            emoji="🍾"
+            colors={['#4facfe', '#00f2fe']}
+          >
+            <View style={styles.colorOptions}>
+              {BOTTLE_COLORS.map(color => (
                 <TouchableOpacity
                   key={color.value}
-                  style={styles.bottleColorButton}
+                  style={[
+                    styles.colorCircle,
+                    { backgroundColor: color.value },
+                    settings.bottleColor === color.value && styles.colorCircleSelected,
+                  ]}
                   onPress={() => {
                     ReactNativeHapticFeedback.trigger('impactLight');
-                    setSettings({ ...settings, bottleColor: color.value as any });
+                    setSettings({ ...settings, bottleColor: color.value });
                   }}
-                >
-                  <LinearGradient
-                    colors={color.colors}
-                    style={[
-                      styles.bottleColorGradient,
-                      settings.bottleColor === color.value && styles.bottleColorSelected,
-                    ]}
-                  >
-                    <Text style={styles.bottleColorText}>{color.label}</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
+                />
               ))}
             </View>
+          </SettingSection>
+
+          {/* Кнопки действий */}
+          <View style={styles.actions}>
+            <GradientButton
+              title="💾 Сохранить настройки"
+              onPress={handleSaveSettings}
+              colors={['#51cf66', '#37b24d']}
+            />
+            <GradientButton
+              title="🗑️ Сбросить все данные"
+              onPress={handleResetData}
+              colors={['#ff6b6b', '#ee5a6f']}
+              style={styles.resetButton}
+            />
           </View>
-
-          {/* Действия */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🗑️ Опасная зона</Text>
-
-            <TouchableOpacity onPress={handleResetData}>
-              <LinearGradient colors={['#ef4444', '#dc2626']} style={styles.dangerButton}>
-                <Text style={styles.dangerButtonText}>Сбросить все данные</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-
-          <View style={{ height: 100 }} />
         </ScrollView>
-
-        <View style={styles.footer}>
-          <GradientButton
-            title="💾 Сохранить настройки"
-            onPress={handleSaveSettings}
-            colors={['#667eea', '#764ba2']}
-          />
-        </View>
       </View>
     </LinearGradient>
   );
@@ -373,9 +306,9 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 8,
+    elevation: 6,
   },
   backButton: {
     padding: 10,
@@ -396,229 +329,40 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  section: {
-    marginBottom: 28,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 8,
-  },
-  sectionDescription: {
+  description: {
     fontSize: 14,
     color: COLORS.textLight,
     marginBottom: 16,
-    lineHeight: 20,
   },
-  categoriesGrid: {
+  grid: {
+    gap: 12,
+  },
+  colorOptions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 16,
   },
-  categoryCard: {
-    width: '47%',
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  categoryGradient: {
-    padding: 16,
-    alignItems: 'center',
-    minHeight: 100,
-    justifyContent: 'center',
-    opacity: 0.7,
-  },
-  categoryEnabled: {
-    opacity: 1,
-  },
-  categoryEmoji: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  categoryText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#ffffff',
-    textAlign: 'center',
-  },
-  categoryTextDisabled: {
-    color: '#6b7280',
-  },
-  checkmark: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: '#ffffff',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkmarkText: {
-    color: '#10b981',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  settingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  settingInfo: {
-    flex: 1,
-    marginRight: 12,
-  },
-  settingLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  settingDescription: {
-    fontSize: 13,
-    color: COLORS.textLight,
-    lineHeight: 18,
-  },
-  speedOptions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  speedButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  speedText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  speedTextInactive: {
-    color: '#6b7280',
-  },
-  themesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  themeCard: {
-    width: '47%',
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  themeGradient: {
-    padding: 16,
-    alignItems: 'center',
-    minHeight: 90,
-    justifyContent: 'center',
-  },
-  themeSelected: {
+  colorCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     borderWidth: 3,
-    borderColor: '#ffffff',
+    borderColor: 'transparent',
   },
-  themeEmoji: {
-    fontSize: 28,
-    marginBottom: 8,
-  },
-  themeText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#ffffff',
-    textAlign: 'center',
-  },
-  themeCheckmark: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: '#ffffff',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  themeCheckmarkText: {
-    color: '#10b981',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  bottleColors: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  bottleColorButton: {
-    flex: 1,
-    minWidth: '30%',
-    borderRadius: 12,
-    overflow: 'hidden',
+  colorCircleSelected: {
+    borderColor: COLORS.primary,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  bottleColorGradient: {
-    padding: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bottleColorSelected: {
-    borderWidth: 3,
-    borderColor: '#ffffff',
-  },
-  bottleColorText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  dangerButton: {
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 4,
   },
-  dangerButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
+  actions: {
+    gap: 12,
+    marginTop: 20,
+    marginBottom: 40,
   },
-  footer: {
-    padding: 20,
-    backgroundColor: '#ffffff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
+  resetButton: {
+    marginTop: 0,
   },
 });
