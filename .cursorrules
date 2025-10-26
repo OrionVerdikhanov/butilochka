@@ -1,0 +1,797 @@
+# Cursor AI Rules - Butilochka Project (v2.0)
+
+## 📱 Project Overview
+
+**Butilochka** - professional React Native mobile game application for playing "bottle spin" games with two modes:
+- **Dating Mode**: Interactive dating game with kiss/like/skip actions
+- **Wishes Mode**: Random wish assignment game
+
+**Status**: Production-ready v2.0 with premium graphics, 3D animations, confetti effects, and haptic feedback.
+
+---
+
+## 🎯 Technology Stack
+
+### Core
+- **React Native**: 0.73.2 (CLI, without Expo)
+- **React**: 18.2.0
+- **TypeScript**: 5.0.4 (strict mode enabled)
+- **Node.js**: >=18
+
+### Navigation & State
+- **React Navigation**: 6.x (Stack Navigator)
+- **AsyncStorage**: 1.21.0 (local persistence)
+
+### Animation & Graphics
+- **React Native Reanimated**: 3.6.1 (animations with native driver)
+- **React Native SVG**: 14.1.0 (scalable icons)
+- **React Native Linear Gradient**: 2.8.3 (gradients)
+- **Lottie**: 6.5.1 (complex animations)
+
+### UX Enhancement
+- **React Native Haptic Feedback**: 2.2.0 (tactile feedback)
+- **React Native Gesture Handler**: 2.14.1
+
+### Build Tools
+- **Gradle**: Android builds
+- **Babel**: With Reanimated plugin
+- **Metro**: React Native bundler
+
+---
+
+## 🏗️ Architecture
+
+### Design Patterns
+
+1. **Repository Pattern**: Data access abstraction layer
+   - `PlayerRepository`, `SettingsRepository`, `StatsRepository`, `WishesRepository`
+   - Interface-based contracts in `services/repositories/interfaces.ts`
+   - Implementations in `services/repositories/`
+
+2. **Service Layer**: Business logic encapsulation
+   - `AppService` handles app initialization, validation, stats
+   - Services use repositories for data operations
+   - Singleton instances exported from service files
+
+3. **Custom Hooks**: Reusable logic composition
+   - `useBottleSpin`: Bottle spinning logic with animation
+   - `usePlayers`: Player management
+   - `useSettings`: Settings management
+   - Hooks return structured objects with state and handlers
+
+4. **Separation of Concerns**
+   ```
+   Screen → Custom Hook → Service → Repository → Storage
+     ↓
+   Pure UI rendering, no business logic
+   ```
+
+### Project Structure
+
+```
+src/
+├── components/           # Reusable UI components
+│   ├── settings/        # Settings-specific components
+│   ├── optimized/       # Performance-optimized components
+│   ├── Bottle*.tsx      # Bottle variants (3D, Premium)
+│   ├── Gradient*.tsx    # Gradient components
+│   └── *Effects.tsx     # Visual effects (Confetti, Particles)
+├── screens/             # Screen components (one per route)
+│   ├── SplashScreen.tsx
+│   ├── PlayersScreen.tsx
+│   ├── ModeSelectionScreen.tsx
+│   ├── WishesGameScreen.tsx
+│   ├── DatingGameScreen.tsx
+│   └── SettingsScreen.tsx
+├── hooks/               # Custom React hooks
+│   ├── useBottleSpin.ts
+│   ├── usePlayers.ts
+│   └── useSettings.ts
+├── services/            # Business logic layer
+│   ├── AppService.ts
+│   └── repositories/    # Data access layer
+│       ├── interfaces.ts
+│       ├── PlayerRepositoryImpl.ts
+│       ├── SettingsRepositoryImpl.ts
+│       └── index.ts
+├── types/               # TypeScript type definitions
+│   └── index.ts
+├── constants/           # App constants
+│   ├── colors.ts
+│   └── wishes.ts
+└── utils/               # Utility functions
+    ├── storage.ts
+    └── performance.ts
+```
+
+---
+
+## 💻 Coding Standards
+
+### Component Structure
+
+```typescript
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+
+// 1. Props interface with JSDoc
+interface ComponentNameProps {
+  /** Description of prop */
+  title: string;
+  /** Callback handler */
+  onPress: () => void;
+  /** Optional prop */
+  variant?: 'primary' | 'secondary';
+}
+
+/**
+ * Component description
+ * @param props - Component properties
+ * @returns JSX element
+ */
+export function ComponentName({ title, onPress, variant = 'primary' }: ComponentNameProps) {
+  // 2. State declarations
+  const [isActive, setIsActive] = useState(false);
+
+  // 3. Refs
+  const animationRef = useRef(new Animated.Value(0)).current;
+
+  // 4. Memoized values (useMemo)
+  const computedValue = useMemo(() => {
+    return expensiveCalculation(title);
+  }, [title]);
+
+  // 5. Callbacks (useCallback)
+  const handlePress = useCallback(() => {
+    setIsActive(true);
+    onPress();
+  }, [onPress]);
+
+  // 6. Effects (useEffect) with cleanup
+  useEffect(() => {
+    const subscription = subscribeToEvent();
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // 7. Render
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>{title}</Text>
+    </View>
+  );
+}
+
+// 8. Memoization for performance (if needed)
+export default React.memo(ComponentName);
+
+// 9. Styles at bottom
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+});
+```
+
+### Custom Hook Structure
+
+```typescript
+import { useState, useCallback, useEffect } from 'react';
+
+/**
+ * Hook parameters interface
+ */
+interface UseHookNameProps {
+  initialValue: string;
+  onComplete?: () => void;
+}
+
+/**
+ * Hook return type interface
+ */
+interface UseHookNameReturn {
+  value: string;
+  isLoading: boolean;
+  updateValue: (newValue: string) => void;
+  reset: () => void;
+}
+
+/**
+ * Custom hook description with usage example
+ * 
+ * @example
+ * ```typescript
+ * const { value, isLoading, updateValue } = useHookName({
+ *   initialValue: 'test',
+ *   onComplete: () => console.log('Done')
+ * });
+ * ```
+ */
+export function useHookName({
+  initialValue,
+  onComplete
+}: UseHookNameProps): UseHookNameReturn {
+  const [value, setValue] = useState(initialValue);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const updateValue = useCallback((newValue: string) => {
+    setValue(newValue);
+    onComplete?.();
+  }, [onComplete]);
+
+  const reset = useCallback(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  return {
+    value,
+    isLoading,
+    updateValue,
+    reset,
+  };
+}
+```
+
+### Service/Repository Structure
+
+```typescript
+/**
+ * Service class with clear responsibilities
+ */
+export class ServiceName {
+  constructor(private repository: RepositoryInterface) {}
+
+  /**
+   * Public methods - business logic
+   */
+  async performAction(data: DataType): Promise<Result> {
+    // 1. Validation
+    this.validateData(data);
+
+    // 2. Business logic
+    const processed = await this.processData(data);
+
+    // 3. Persistence
+    await this.repository.save(processed);
+
+    return processed;
+  }
+
+  /**
+   * Private methods - internal logic
+   */
+  private validateData(data: DataType): void {
+    if (!data.required) {
+      throw new Error('Required field missing');
+    }
+  }
+
+  private async processData(data: DataType): Promise<ProcessedData> {
+    // Processing logic
+    return processedData;
+  }
+}
+
+// Export singleton instance
+export const serviceName = new ServiceName(repositoryInstance);
+```
+
+---
+
+## 📝 Naming Conventions
+
+### Files and Directories
+- **Components**: `PascalCase.tsx` (e.g., `BottleSpinner.tsx`, `PlayerCard.tsx`)
+- **Screens**: `PascalCase.tsx` with `Screen` suffix (e.g., `PlayersScreen.tsx`)
+- **Hooks**: `camelCase.ts` with `use` prefix (e.g., `useBottleSpin.ts`)
+- **Services**: `PascalCase.ts` with `Service` suffix (e.g., `AppService.ts`)
+- **Repositories**: `PascalCase.ts` with `Repository` or `RepositoryImpl` suffix
+- **Utils**: `camelCase.ts` (e.g., `storageHelpers.ts`, `dateUtils.ts`)
+- **Types**: `camelCase.ts` or `index.ts` (e.g., `gameTypes.ts`, `types/index.ts`)
+- **Constants**: `camelCase.ts` (e.g., `colors.ts`, `wishes.ts`)
+
+### Code Elements
+- **Components**: `PascalCase` (e.g., `BottleSpinner`, `GradientButton`)
+- **Hooks**: `camelCase` with `use` prefix (e.g., `useBottleSpin`, `usePlayers`)
+- **Functions**: `camelCase`, verb + noun (e.g., `handleSpinComplete`, `validatePlayer`)
+- **Event Handlers**: `handle` or `on` prefix (e.g., `handlePress`, `onSpinComplete`)
+- **Variables**: `camelCase`, descriptive (e.g., `currentPlayerIndex`, `isSpinning`)
+- **Constants**: `UPPER_SNAKE_CASE` (e.g., `SPIN_DURATION`, `MAX_PLAYERS`)
+- **Types/Interfaces**: `PascalCase` (e.g., `Player`, `GameSettings`, `SpinResult`)
+- **Props Interfaces**: Component name + `Props` (e.g., `BottleSpinnerProps`)
+- **Boolean variables**: `is/has/should` prefix (e.g., `isVisible`, `hasError`, `shouldAnimate`)
+
+### Style Classes
+```typescript
+const styles = StyleSheet.create({
+  // Container/Layout
+  container: {},
+  wrapper: {},
+  
+  // Components (BEM-inspired)
+  card: {},
+  cardSelected: {},  // or 'card--selected'
+  cardTitle: {},     // or 'card__title'
+  
+  // Modifiers
+  textBold: {},
+  buttonPrimary: {},
+});
+```
+
+---
+
+## 🔷 TypeScript Guidelines
+
+### Strict Mode Rules
+```typescript
+// ✅ GOOD - Explicit types
+interface Player {
+  id: string;
+  name: string;
+  gender: 'M' | 'F';
+  likes: number;
+}
+
+function processPlayer(player: Player): ProcessedPlayer {
+  return { ...player, processed: true };
+}
+
+// ❌ BAD - Using 'any'
+function processPlayer(player: any): any {
+  return player;
+}
+
+// ✅ GOOD - Proper typing for async
+async function loadData(): Promise<Player[]> {
+  try {
+    const data = await api.fetchPlayers();
+    return data;
+  } catch (error) {
+    console.error('Failed to load:', error);
+    throw error;
+  }
+}
+
+// ✅ GOOD - Union types
+type GameMode = 'wishes' | 'dating';
+type LoadingState = 'idle' | 'loading' | 'success' | 'error';
+
+// ✅ GOOD - Generic constraints
+function findById<T extends { id: string }>(items: T[], id: string): T | null {
+  return items.find(item => item.id === id) || null;
+}
+
+// ✅ GOOD - Const assertions for immutable data
+const ANIMATION_CONFIG = {
+  DURATION: 300,
+  EASING: 'ease-in-out',
+} as const;
+```
+
+### Interface vs Type
+```typescript
+// Use interface for object shapes (extendable)
+interface Player {
+  id: string;
+  name: string;
+}
+
+// Use type for unions, intersections, primitives
+type GameMode = 'wishes' | 'dating';
+type PlayerWithStats = Player & { stats: GameStats };
+```
+
+### JSDoc Comments
+```typescript
+/**
+ * Calculate rotation angle for target player
+ * 
+ * @param targetIndex - Index of target player in array
+ * @param totalPlayers - Total number of players
+ * @returns Rotation angle in degrees
+ * 
+ * @example
+ * ```typescript
+ * const angle = calculateRotationAngle(3, 8); // Returns: 135
+ * ```
+ */
+function calculateRotationAngle(targetIndex: number, totalPlayers: number): number {
+  return (targetIndex * 360) / totalPlayers;
+}
+```
+
+---
+
+## ⚛️ React Native Best Practices
+
+### Styles
+```typescript
+// ✅ Always use StyleSheet.create
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+});
+
+// ❌ Avoid inline styles (performance impact)
+<View style={{ flex: 1, backgroundColor: '#fff' }} />
+```
+
+### Animations
+```typescript
+// ✅ ALWAYS use useNativeDriver when possible
+Animated.timing(animatedValue, {
+  toValue: 1,
+  duration: 300,
+  useNativeDriver: true, // ✅ Critical for performance
+}).start();
+
+// ✅ Use Reanimated for complex animations
+import { useSharedValue, withSpring } from 'react-native-reanimated';
+
+const offset = useSharedValue(0);
+offset.value = withSpring(100);
+```
+
+### Lists
+```typescript
+// ✅ Use FlatList for large lists
+<FlatList
+  data={players}
+  renderItem={({ item }) => <PlayerCard player={item} />}
+  keyExtractor={item => item.id}
+  getItemLayout={(data, index) => ({
+    length: ITEM_HEIGHT,
+    offset: ITEM_HEIGHT * index,
+    index,
+  })}
+/>
+
+// ❌ Avoid .map() for large lists (performance)
+{players.map(player => <PlayerCard key={player.id} player={player} />)}
+```
+
+### Platform-Specific Code
+```typescript
+import { Platform, StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  container: {
+    ...Platform.select({
+      ios: { paddingTop: 20 },
+      android: { paddingTop: 0 },
+    }),
+  },
+});
+```
+
+### Haptic Feedback
+```typescript
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+
+// User actions
+ReactNativeHapticFeedback.trigger('impactLight');   // Light tap
+ReactNativeHapticFeedback.trigger('impactMedium');  // Medium action
+ReactNativeHapticFeedback.trigger('impactHeavy');   // Heavy action
+
+// Notifications
+ReactNativeHapticFeedback.trigger('notificationSuccess');
+ReactNativeHapticFeedback.trigger('notificationWarning');
+ReactNativeHapticFeedback.trigger('notificationError');
+```
+
+---
+
+## ⚡ Performance Optimization
+
+### Component Memoization
+```typescript
+// ✅ Memoize components that render frequently with same props
+export const PlayerCard = React.memo<PlayerCardProps>(
+  ({ player, onPress }) => {
+    return (
+      <TouchableOpacity onPress={() => onPress(player.id)}>
+        <Text>{player.name}</Text>
+      </TouchableOpacity>
+    );
+  },
+  // Optional custom comparison
+  (prevProps, nextProps) => {
+    return prevProps.player.id === nextProps.player.id &&
+           prevProps.player.name === nextProps.player.name;
+  }
+);
+```
+
+### Callback Memoization
+```typescript
+// ✅ Use useCallback for functions passed to child components
+const handlePlayerPress = useCallback((playerId: string) => {
+  navigation.navigate('PlayerDetail', { playerId });
+}, [navigation]);
+
+// ✅ Include ALL dependencies
+const handleSpin = useCallback(() => {
+  if (!isSpinning && players.length > 0) {
+    startSpin();
+  }
+}, [isSpinning, players.length, startSpin]); // All deps listed
+```
+
+### Value Memoization
+```typescript
+// ✅ Use useMemo for expensive computations
+const sortedPlayers = useMemo(() => {
+  return [...players].sort((a, b) => b.likes - a.likes);
+}, [players]);
+
+const filteredWishes = useMemo(() => {
+  return wishes.filter(wish => 
+    enabledCategories.includes(wish.category)
+  );
+}, [wishes, enabledCategories]);
+```
+
+### useEffect Cleanup
+```typescript
+// ✅ Always cleanup subscriptions and timers
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setShowResult(true);
+  }, 1000);
+
+  return () => clearTimeout(timer); // Cleanup
+}, []);
+
+useEffect(() => {
+  const subscription = eventEmitter.addListener('event', handler);
+  
+  return () => {
+    subscription.remove(); // Cleanup
+  };
+}, []);
+```
+
+### Animation Performance
+```typescript
+// ✅ Use native driver for transforms and opacity
+const animatedStyle = {
+  transform: [
+    {
+      rotate: rotationValue.interpolate({
+        inputRange: [0, 360],
+        outputRange: ['0deg', '360deg'],
+      }),
+    },
+  ],
+  opacity: opacityValue,
+};
+
+// ❌ Cannot use native driver for layout properties
+// width, height, padding, margin, etc.
+```
+
+---
+
+## 🧪 Error Handling
+
+### Async/Await Pattern
+```typescript
+// ✅ Proper error handling with try-catch-finally
+const loadPlayers = async () => {
+  try {
+    setIsLoading(true);
+    const data = await playerRepository.loadPlayers();
+    setPlayers(data);
+  } catch (error) {
+    console.error('Failed to load players:', error);
+    setError('Could not load players. Please try again.');
+    // Optionally show user notification
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+// ✅ Validation before operations
+const addPlayer = async (player: Partial<Player>) => {
+  const validation = appService.validatePlayer(player);
+  
+  if (!validation.isValid) {
+    throw new Error(validation.errors.join(', '));
+  }
+  
+  await playerRepository.addPlayer(player as Player);
+};
+```
+
+---
+
+## 🎨 UI/UX Guidelines
+
+### Gradients
+```typescript
+import LinearGradient from 'react-native-linear-gradient';
+
+// Define in constants/colors.ts
+export const GRADIENTS = {
+  primary: ['#ff6b6b', '#ee5a6f', '#d63447'],
+  secondary: ['#4ecdc4', '#44a3d9', '#4a90e2'],
+} as const;
+
+// Usage
+<LinearGradient
+  colors={GRADIENTS.primary}
+  start={{ x: 0, y: 0 }}
+  end={{ x: 1, y: 1 }}
+  style={styles.container}
+/>
+```
+
+### Colors
+```typescript
+// ✅ Define all colors in constants/colors.ts
+export const COLORS = {
+  primary: '#ff6b6b',
+  secondary: '#4ecdc4',
+  background: '#f8f9fa',
+  text: {
+    primary: '#000000',
+    secondary: '#6c757d',
+  },
+  player: {
+    male: '#4a90e2',
+    female: '#ff69b4',
+  },
+} as const;
+
+// ❌ Avoid hardcoded colors in components
+```
+
+---
+
+## 🤖 AI Assistant Behavior
+
+### Response Style
+- **Be concise and direct** - avoid lengthy explanations
+- **Provide technical details** - not general advice
+- **Show code examples** - from actual project patterns
+- **Suggest alternatives** - when multiple valid solutions exist
+- **Focus on implementation** - not theory
+
+### Code Quality
+- Write **production-ready code** without errors
+- Follow **senior developer best practices**
+- Apply **project-specific patterns** (Repository, Service, Custom Hooks)
+- Use **strict TypeScript** typing (no `any`)
+- Include **proper error handling**
+- Add **JSDoc comments** for complex logic
+
+### When Making Changes
+1. **Check existing code structure** before refactoring
+2. **Follow established patterns** (hooks, services, repositories)
+3. **Maintain consistency** with naming conventions
+4. **Optimize performance** (memoization, native driver)
+5. **Update related types** and interfaces
+6. **Consider backward compatibility**
+7. **Test on both platforms** mentally (iOS/Android)
+
+### Code Review Focus
+- Single Responsibility Principle adherence
+- Proper separation of concerns (UI vs logic)
+- TypeScript strict mode compliance
+- Performance optimizations present
+- Error handling implemented
+- Cleanup functions in useEffect
+- Proper memoization (React.memo, useCallback, useMemo)
+- Native driver usage in animations
+
+### Examples to Follow
+
+**Custom Hook Pattern** (like `useBottleSpin.ts`):
+- Clear interfaces for props and return types
+- Comprehensive JSDoc with examples
+- Memoized callbacks and values
+- Proper cleanup
+
+**Service Pattern** (like `AppService.ts`):
+- Constructor dependency injection
+- Public methods for business logic
+- Private methods for internal operations
+- Validation functions
+- Singleton export
+
+**Repository Pattern** (like `PlayerRepositoryImpl.ts`):
+- Interface-based contracts
+- Async operations with error handling
+- Clear method names (load, save, update, delete)
+
+---
+
+## 📋 Quick Reference
+
+### Imports Order
+```typescript
+// 1. React/React Native
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+
+// 2. Third-party libraries
+import LinearGradient from 'react-native-linear-gradient';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+
+// 3. Internal modules (absolute imports)
+import { Player, GameMode } from '../types';
+import { COLORS, GRADIENTS } from '../constants/colors';
+import { useBottleSpin } from '../hooks/useBottleSpin';
+```
+
+### Common Patterns
+
+**State with Loading/Error**:
+```typescript
+const [data, setData] = useState<Player[]>([]);
+const [isLoading, setIsLoading] = useState(false);
+const [error, setError] = useState<string | null>(null);
+```
+
+**Animated Value**:
+```typescript
+const animatedValue = useRef(new Animated.Value(0)).current;
+```
+
+**Haptic + Action**:
+```typescript
+const handleAction = useCallback(() => {
+  ReactNativeHapticFeedback.trigger('impactMedium');
+  performAction();
+}, [performAction]);
+```
+
+---
+
+## ✅ Pre-Commit Checklist
+
+### Code Quality
+- [ ] No TypeScript `any` types used
+- [ ] All functions have proper types/interfaces
+- [ ] JSDoc comments added for complex functions
+- [ ] No unused variables or imports
+- [ ] No console.log in production code
+
+### Performance
+- [ ] useNativeDriver used in animations
+- [ ] Expensive computations memoized (useMemo)
+- [ ] Callbacks memoized (useCallback)
+- [ ] Heavy components wrapped in React.memo
+- [ ] FlatList used for large lists
+
+### React Native
+- [ ] StyleSheet.create used for styles
+- [ ] No inline styles in render
+- [ ] Platform-specific code handled properly
+- [ ] Haptic feedback on user actions
+- [ ] Proper cleanup in useEffect
+
+### Architecture
+- [ ] UI separated from business logic
+- [ ] Custom hooks for reusable logic
+- [ ] Services used for business logic
+- [ ] Repositories used for data access
+- [ ] Single Responsibility Principle followed
+
+### Error Handling
+- [ ] Try-catch blocks for async operations
+- [ ] User-friendly error messages
+- [ ] Validation before data operations
+- [ ] Loading states handled
+- [ ] Edge cases covered
+
+---
+
+**Remember**: This is a professional, production-ready application. Every line of code should reflect senior-level quality and attention to detail.

@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node:*)",
+      "Bash(npm install:*)",
+      "Bash(echo:*)",
+      "Bash(export:*)",
+      "Bash(export ANDROID_SDK_ROOT=$ANDROID_HOME:*)",
+      "Bash(export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:*)",
+      "Bash(ls:*)",
+      "Bash(keytool:*)",
+      "Bash(./gradlew:*)",
+      "Bash(wget:*)",
+      "Bash(unzip:*)",
+      "Bash(npm run build:android:*)",
+      "Bash($ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager:*)",
+      "Bash(claude:*)",
+      "Bash(curl:*)",
+      "Bash(npm update:*)",
+      "Read(//home/fedya/Desktop/screen/**)",
+      "Bash($ANDROID_HOME/emulator/emulator:*)",
+      "Bash(adb:*)",
+      "Bash(npx react-native run-android:*)",
+      "Bash(npx react-native start:*)",
+      "Bash(pkill:*)",
+      "Bash(npx react-native clean:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(find:*)",
+      "Bash(tree:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

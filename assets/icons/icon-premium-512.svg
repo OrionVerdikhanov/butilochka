@@ -1,0 +1,45 @@
+
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff8787;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#ff6b6b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d63447;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="bottle512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.95" />
+      <stop offset="50%" style="stop-color:#ffe8e8;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#ffd4d4;stop-opacity:0.85" />
+    </linearGradient>
+    <radialGradient id="glow512" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.6" />
+      <stop offset="70%" style="stop-color:#ffffff;stop-opacity:0.2" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Фон -->
+  <rect width="512" height="512" fill="url(#bg512)" rx="112.64"/>
+
+  <!-- Свечение -->
+  <circle cx="256" cy="256" r="204.8" fill="url(#glow512)"/>
+
+  <!-- Бутылочка -->
+  <g transform="translate(256,256)">
+    <!-- Горлышко -->
+    <rect x="-40.96" y="-179.2" width="81.92" height="153.6"
+          fill="url(#bottle512)" rx="40.96"/>
+    <!-- Тело -->
+    <ellipse cx="0" cy="25.6" rx="92.16" ry="153.6"
+             fill="url(#bottle512)"/>
+    <!-- Блик 1 -->
+    <ellipse cx="40.96" cy="-51.2" rx="30.72" ry="76.8"
+             fill="#ffffff" opacity="0.6"/>
+    <!-- Блик 2 -->
+    <circle cx="-25.6" cy="40.96" r="20.48"
+            fill="#ffffff" opacity="0.5"/>
+    <!-- Блик 3 -->
+    <circle cx="51.2" cy="61.44" r="15.36"
+            fill="#ffffff" opacity="0.7"/>
+  </g>
+</svg>
