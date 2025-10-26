@@ -27,6 +27,21 @@ export default function App() {
     setSettings(loadedSettings);
   };
 
+  // Получаем цвет StatusBar на основе темы
+  const getStatusBarColor = () => {
+    const themeColors = {
+      romantic: '#ff6b6b',
+      party: '#feca57',
+      ocean: '#48cae4',
+      sunset: '#ff6b9d',
+      galaxy: '#6c5ce7',
+      forest: '#00b894',
+      neon: '#00d2d3',
+      pastel: '#fab1a0'
+    };
+    return themeColors[settings.theme] || themeColors.romantic;
+  };
+
   const handleSplashFinish = () => {
     setCurrentScreen('players');
   };
@@ -65,7 +80,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#ff6b6b" />
+      <StatusBar barStyle="light-content" backgroundColor={getStatusBarColor()} />
 
       {currentScreen === 'splash' && (
         <SplashScreen onFinish={handleSplashFinish} />

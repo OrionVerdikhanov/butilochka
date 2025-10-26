@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PropsWithChildren } from 'react';
-import { defaultTheme } from '@constants/theme';
+import { defaultTheme } from '../constants/theme';
 import AnimatedBackground from './AnimatedBackground';
 
 interface GameLayoutProps {

@@ -18,7 +18,8 @@ export interface GameAction {
   wish?: string;
 }
 
-export type GameMode = 'wishes' | 'dating';
+// Re-export GameMode from game.ts to avoid duplication
+export type { GameMode } from './game';
 
 export interface GameState {
   players: Player[];
@@ -34,7 +35,7 @@ export interface SpinResult {
   wish?: string;
 }
 
-export interface GameSettings {
+export interface WishesGameSettings {
   enabledCategories: import('../constants/wishes').WishCategory[];
   soundEnabled: boolean;
   spinDuration: number; // in milliseconds
@@ -42,7 +43,7 @@ export interface GameSettings {
   timerDuration: number; // in seconds
 }
 
-export const DEFAULT_SETTINGS: GameSettings = {
+export const DEFAULT_WISHES_SETTINGS: WishesGameSettings = {
   enabledCategories: ['all'],
   soundEnabled: true,
   spinDuration: 4000,

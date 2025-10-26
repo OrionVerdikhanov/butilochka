@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
 import Svg, { G, Path, Circle, Defs, RadialGradient, Stop, Rect, Ellipse, Text, LinearGradient, Filter, FeGaussianBlur, FeMerge, FeMergeNode, Animate } from 'react-native-svg';
-import { BOTTLE_STYLES, defaultTheme } from '@constants/theme';
+import { BOTTLE_STYLES, defaultTheme } from '../constants/theme';
 
 export type BottleVariant = '2d' | '3d' | 'premium';
 
@@ -11,6 +11,7 @@ interface BottleProps {
   variant?: BottleVariant;
   size?: number;
   style?: any;
+  color?: string;
 }
 
 const Bottle: React.FC<BottleProps> = ({
@@ -19,6 +20,7 @@ const Bottle: React.FC<BottleProps> = ({
   variant = '3d',
   size = 200,
   style,
+  color,
 }) => {
   const spin = rotation.interpolate({
     inputRange: [0, 360],

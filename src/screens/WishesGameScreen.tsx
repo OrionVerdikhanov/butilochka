@@ -6,7 +6,7 @@ import { Settings, DEFAULT_SETTINGS } from '../utils/storage';
 import { COLORS } from '../constants/colors';
 import { getWishesByCategories } from '../constants/wishes';
 import { useBottleSpin } from '../hooks/useBottleSpin';
-import Bottle3D from '../components/Bottle3D';
+import Bottle from '../components/Bottle';
 import AnimatedBackground from '../components/AnimatedBackground';
 import GradientButton from '../components/GradientButton';
 import ConfettiExplosion from '../components/ConfettiExplosion';
@@ -191,7 +191,7 @@ export default function WishesGameScreenPremium({ players, onBack, settings = DE
           <View style={styles.playersCircle}>{renderPlayers()}</View>
 
           <View style={styles.bottleContainer}>
-            <Bottle3D
+            <Bottle
               rotation={rotationValue}
               isSpinning={isSpinning}
               size={200}

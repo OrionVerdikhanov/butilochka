@@ -5,15 +5,20 @@ import { Player } from '../types';
 import { Settings, DEFAULT_SETTINGS } from '../utils/storage';
 
 /**
+ * Тип для дополнительных данных, передаваемых при вращении
+ */
+export type SpinExtraData = string | number | boolean | Record<string, unknown> | null;
+
+/**
  * Параметры для хука useBottleSpin
  */
-export interface UseBottleSpinProps {
+export interface UseBottleSpinProps<TExtraData = SpinExtraData> {
   /** Массив игроков */
   players: Player[];
   /** Настройки игры */
   settings?: Settings;
   /** Дополнительная логика после завершения вращения */
-  onSpinComplete?: (result: SpinResult) => void;
+  onSpinComplete?: (result: SpinResult<TExtraData>) => void;
   /** Фильтр доступных целей для вращения */
   targetFilter?: (spinner: Player, players: Player[]) => Player[];
 }
@@ -21,7 +26,7 @@ export interface UseBottleSpinProps {
 /**
  * Результат вращения бутылки
  */
-export interface SpinResult {
+export interface SpinResult<TExtraData = SpinExtraData> {
   /** Игрок, который крутил */
   spinner: Player;
   /** Целевой игрок */
@@ -29,13 +34,13 @@ export interface SpinResult {
   /** Индекс целевого игрока */
   targetIndex: number;
   /** Дополнительные данные (например, желание) */
-  extraData?: any;
+  extraData?: TExtraData;
 }
 
 /**
  * Возвращаемое значение хука useBottleSpin
  */
-export interface UseBottleSpinReturn {
+export interface UseBottleSpinReturn<TExtraData = SpinExtraData> {
   /** Происходит ли вращение в данный момент */
   isSpinning: boolean;
   /** Индекс текущего игрока, который крутит */
@@ -45,7 +50,7 @@ export interface UseBottleSpinReturn {
   /** Анимированное значение вращения */
   rotationValue: Animated.Value;
   /** Функция запуска вращения */
-  spinBottle: (extraData?: any) => void;
+  spinBottle: (extraData?: TExtraData) => void;
   /** Функция перехода к следующему ходу */
   nextTurn: () => void;
   /** Сброс состояния вращения */
@@ -80,12 +85,12 @@ export interface UseBottleSpinReturn {
  * });
  * ```
  */
-export function useBottleSpin({
+export function useBottleSpin<TExtraData = SpinExtraData>({
   players,
   settings = DEFAULT_SETTINGS,
   onSpinComplete,
   targetFilter
-}: UseBottleSpinProps): UseBottleSpinReturn {
+}: UseBottleSpinProps<TExtraData>): UseBottleSpinReturn<TExtraData> {
   // Состояния
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentSpinnerIndex, setCurrentSpinnerIndex] = useState(0);

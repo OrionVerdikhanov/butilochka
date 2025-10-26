@@ -31,7 +31,22 @@
       "Bash(git init:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(java:*)",
+      "Bash(xargs:*)",
+      "Bash(npx react-native log-android:*)",
+      "Bash(cat:*)",
+      "Bash(sed:*)",
+      "Read(//home/fedya/android-sdk/**)",
+      "Read(//home/fedya/.android/**)",
+      "Bash(awk:*)",
+      "Read(///**)",
+      "Bash(xxd:*)",
+      "Read(//home/fedya/**)",
+      "Bash(iconv:*)",
+      "Bash(ssh-keygen:*)",
+      "Bash(git config:*)",
+      "Bash(git remote add:*)"
     ],
     "deny": [],
     "ask": []

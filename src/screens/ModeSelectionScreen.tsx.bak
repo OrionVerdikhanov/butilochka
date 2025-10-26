@@ -123,6 +123,7 @@ export default function ModeSelectionScreenPremium({ players, onSelectMode, onBa
           </TouchableOpacity>
         </View>
       </ScrollView>
+    </View>
     </GradientBackground>
   );
 }

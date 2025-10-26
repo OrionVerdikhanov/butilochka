@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Animated, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Player } from '@types/index';
-import { PLAYER_STYLES, defaultTheme } from '@constants/theme';
+import { PLAYER_STYLES, defaultTheme } from '../constants/theme';
 
 interface PlayerCircleProps {
   player: Player;

@@ -1,7 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, ActivityIndicator, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { defaultTheme } from '@constants/theme';
+import { defaultTheme } from '../constants/theme';
 
 interface ActionButtonProps {
   title: string;

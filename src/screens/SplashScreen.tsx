@@ -14,10 +14,11 @@ export default function SplashScreen({ onFinish }: Props) {
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
+  const isMounted = useRef(true);
 
   useEffect(() => {
     // Анимация появления
-    Animated.parallel([
+    const fadeInAnimation = Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 800,
@@ -29,19 +30,19 @@ export default function SplashScreen({ onFinish }: Props) {
         tension: 40,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]);
 
     // Анимация вращения
-    Animated.loop(
+    const rotationAnimation = Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
         duration: 3000,
         useNativeDriver: true,
       })
-    ).start();
+    );
 
     // Анимация свечения
-    Animated.loop(
+    const glowAnimation = Animated.loop(
       Animated.sequence([
         Animated.timing(glowAnim, {
           toValue: 1,
@@ -54,18 +55,35 @@ export default function SplashScreen({ onFinish }: Props) {
           useNativeDriver: true,
         }),
       ])
-    ).start();
+    );
+
+    // Запуск анимаций
+    fadeInAnimation.start();
+    rotationAnimation.start();
+    glowAnimation.start();
 
     // Завершение через 2.5 секунды
     const timer = setTimeout(() => {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }).start(() => onFinish());
+      if (isMounted.current) {
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }).start(() => {
+          if (isMounted.current) {
+            onFinish();
+          }
+        });
+      }
     }, 2500);
 
-    return () => clearTimeout(timer);
+    // Очистка при размонтировании
+    return () => {
+      isMounted.current = false;
+      clearTimeout(timer);
+      rotationAnimation.stop();
+      glowAnimation.stop();
+    };
   }, []);
 
   const rotate = rotateAnim.interpolate({
