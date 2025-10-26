@@ -48,8 +48,10 @@ export default function DatingGameScreenPremium({ players, onBack, settings = DE
       oppositeGenderPlayers[Math.floor(Math.random() * oppositeGenderPlayers.length)];
     const targetIndex = playersState.findIndex(p => p.id === randomTarget.id);
 
+    // Рассчитываем угол для выбранного игрока
+    // Игроки расположены начиная с -90° (12 часов)
     const anglePerPlayer = 360 / playersState.length;
-    const targetAngle = targetIndex * anglePerPlayer;
+    const targetAngle = targetIndex * anglePerPlayer - 90;
 
     const randomRotations = 4 + Math.random() * 6;
     const totalRotation = randomRotations * 360 + targetAngle;
@@ -130,8 +132,8 @@ export default function DatingGameScreenPremium({ players, onBack, settings = DE
           style={[
             styles.playerCircle,
             {
-              left: x + 150,
-              top: y + 150,
+              left: x + 160,
+              top: y + 160,
             },
           ]}
         >

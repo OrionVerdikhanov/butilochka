@@ -39,16 +39,20 @@ export default function WishesGameScreenPremium({ players, onBack, settings = DE
     setShowConfetti(false);
     setTargetPlayerIndex(null);
 
-    const randomRotations = 4 + Math.random() * 6;
-    const randomAngle = Math.random() * 360;
-    const totalRotation = randomRotations * 360 + randomAngle;
+    // Выбираем случайного игрока (не крутящего)
+    let targetIndex;
+    do {
+      targetIndex = Math.floor(Math.random() * players.length);
+    } while (targetIndex === currentSpinnerIndex);
 
+    // Рассчитываем угол для выбранного игрока
+    // Игроки расположены начиная с -90° (12 часов)
     const anglePerPlayer = 360 / players.length;
-    let targetIndex = Math.floor(((randomAngle % 360) / anglePerPlayer)) % players.length;
+    const targetAngle = targetIndex * anglePerPlayer - 90;
 
-    if (targetIndex === currentSpinnerIndex) {
-      targetIndex = (targetIndex + 1) % players.length;
-    }
+    // Добавляем случайное количество полных оборотов
+    const randomRotations = 4 + Math.random() * 6;
+    const totalRotation = randomRotations * 360 + targetAngle;
 
     // Get wishes based on settings
     const availableWishes = getWishesByCategories(settings.enabledCategories);
@@ -105,8 +109,8 @@ export default function WishesGameScreenPremium({ players, onBack, settings = DE
           style={[
             styles.playerCircle,
             {
-              left: x + 150,
-              top: y + 150,
+              left: x + 160,
+              top: y + 160,
             },
           ]}
         >

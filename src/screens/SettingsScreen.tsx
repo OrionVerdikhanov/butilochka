@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
-import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
-import FloatingParticles from '../components/FloatingParticles';
 import { Settings, saveSettings, loadSettings, DEFAULT_SETTINGS, clearAllData } from '../utils/storage';
 import { WishCategory, CATEGORY_NAMES, CATEGORY_EMOJIS } from '../constants/wishes';
 import { COLORS } from '../constants/colors';
@@ -99,9 +97,7 @@ export default function SettingsScreen({ onBack, onSettingsChange }: Props) {
   };
 
   return (
-    <GradientBackground colors={['#f8f9ff', '#f0f2ff', '#e8eaff']}>
-      <FloatingParticles count={12} color="rgba(102, 126, 234, 0.2)" size={5} />
-
+    <LinearGradient colors={['#f8f9ff', '#f0f2ff', '#e8eaff']} style={styles.mainContainer}>
       <View style={styles.container}>
         <LinearGradient colors={['#667eea', '#764ba2']} style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={onBack}>
@@ -361,11 +357,14 @@ export default function SettingsScreen({ onBack, onSettingsChange }: Props) {
           />
         </View>
       </View>
-    </GradientBackground>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+  },
   container: {
     flex: 1,
   },
