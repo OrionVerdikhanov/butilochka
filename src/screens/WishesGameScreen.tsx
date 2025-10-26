@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing, Modal } from 'react-native';
 import { Player } from '../types';
 import { Settings, DEFAULT_SETTINGS } from '../utils/storage';
@@ -27,6 +27,29 @@ export default function WishesGameScreenPremium({ players, onBack, settings = DE
   const [showConfetti, setShowConfetti] = useState(false);
 
   const rotationValue = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Анимация пульсации для текущего игрока
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.15,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, []);
 
   const spinBottle = () => {
     if (isSpinning) return;
@@ -114,6 +137,21 @@ export default function WishesGameScreenPremium({ players, onBack, settings = DE
             },
           ]}
         >
+          {isSpinner && (
+            <Animated.View
+              style={[
+                styles.spinnerGlow,
+                {
+                  transform: [{ scale: pulseAnim }],
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={['rgba(255, 212, 59, 0.6)', 'rgba(250, 176, 5, 0.3)']}
+                style={styles.glowGradient}
+              />
+            </Animated.View>
+          )}
           <LinearGradient
             colors={
               isSpinner
@@ -124,9 +162,17 @@ export default function WishesGameScreenPremium({ players, onBack, settings = DE
                 ? ['#4a90e2', '#357abd']
                 : ['#ff69b4', '#e65a9f']
             }
-            style={styles.playerGradient}
+            style={[
+              styles.playerGradient,
+              isSpinner && styles.playerGradientActive,
+            ]}
           >
             <Text style={styles.playerCircleText}>{player.name}</Text>
+            {isSpinner && (
+              <View style={styles.spinnerBadge}>
+                <Text style={styles.spinnerBadgeText}>🎯</Text>
+              </View>
+            )}
           </LinearGradient>
         </View>
       );
@@ -154,10 +200,16 @@ export default function WishesGameScreenPremium({ players, onBack, settings = DE
           colors={['#ffd43b', '#fab005']}
           style={styles.spinnerInfo}
           start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
+          end={{ x: 1, y: 1 }}
         >
-          <Text style={styles.spinnerLabel}>Крутит:</Text>
-          <Text style={styles.spinnerName}>{currentSpinner.name}</Text>
+          <View style={styles.spinnerInfoContent}>
+            <Text style={styles.spinnerLabel}>СЕЙЧАС КРУТИТ</Text>
+            <View style={styles.spinnerNameContainer}>
+              <Text style={styles.spinnerEmoji}>🎯</Text>
+              <Text style={styles.spinnerName}>{currentSpinner.name}</Text>
+            </View>
+            <Text style={styles.spinnerHint}>Крутите бутылочку!</Text>
+          </View>
         </LinearGradient>
 
         <View style={styles.gameArea}>
@@ -262,24 +314,45 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   spinnerInfo: {
-    padding: 20,
+    padding: 24,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  spinnerInfoContent: {
+    alignItems: 'center',
   },
   spinnerLabel: {
-    fontSize: 16,
-    color: '#ffffff',
-    fontWeight: '600',
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    marginBottom: 8,
+  },
+  spinnerNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  spinnerEmoji: {
+    fontSize: 32,
   },
   spinnerName: {
-    fontSize: 28,
+    fontSize: 32,
     color: '#ffffff',
     fontWeight: 'bold',
-    marginTop: 5,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  spinnerHint: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontWeight: '500',
+    marginTop: 8,
   },
   gameArea: {
     flex: 1,
@@ -303,18 +376,65 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
+  spinnerGlow: {
+    position: 'absolute',
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    top: -8,
+    left: -8,
+    zIndex: -1,
+  },
+  glowGradient: {
+    flex: 1,
+    borderRadius: 48,
+  },
   playerGradient: {
     flex: 1,
     borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 4,
+    borderWidth: 0,
+  },
+  playerGradientActive: {
+    borderWidth: 3,
+    borderColor: '#ffffff',
+    shadowColor: '#ffd43b',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 12,
+    elevation: 12,
+  },
+  spinnerBadge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#ffd43b',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  spinnerBadgeText: {
+    fontSize: 16,
   },
   playerCircleText: {
     color: '#ffffff',
     fontSize: 13,
     fontWeight: 'bold',
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   bottleContainer: {
     alignItems: 'center',

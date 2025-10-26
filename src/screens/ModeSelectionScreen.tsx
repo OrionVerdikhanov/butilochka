@@ -42,9 +42,13 @@ export default function ModeSelectionScreenPremium({ players, onSelectMode, onBa
   return (
     <GradientBackground colors={['#fff5f5', '#ffe8e8', '#ffd4d4']}>
       <FloatingParticles count={20} color="rgba(255, 107, 107, 0.2)" size={5} />
-      
+
       <View style={styles.container}>
-        <Text style={styles.title}>✨ Выберите режим игры ✨</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.titleEmoji}>🎮</Text>
+          <Text style={styles.title}>Выберите режим игры</Text>
+          <Text style={styles.titleHint}>Выберите один из режимов ниже</Text>
+        </View>
 
         <LinearGradient
           colors={['#ffffff', '#fff5f5']}
@@ -148,16 +152,30 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  titleContainer: {
+    marginTop: 40,
+    marginBottom: 30,
+    alignItems: 'center',
+  },
+  titleEmoji: {
+    fontSize: 56,
+    marginBottom: 12,
+  },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     color: COLORS.primary,
     textAlign: 'center',
-    marginTop: 40,
-    marginBottom: 30,
-    textShadowColor: 'rgba(0, 0, 0, 0.1)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.15)',
+    textShadowOffset: { width: 0, height: 3 },
+    textShadowRadius: 6,
+    marginBottom: 8,
+  },
+  titleHint: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: COLORS.textLight,
+    textAlign: 'center',
   },
   playersInfo: {
     padding: 20,
@@ -198,19 +216,22 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   modeCard: {
-    borderRadius: 20,
+    borderRadius: 24,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 12,
+    marginVertical: 8,
+    borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
   },
   modeCardDisabled: {
     opacity: 0.7,
   },
   modeGradient: {
-    padding: 28,
+    padding: 32,
   },
   modeContent: {
     alignItems: 'center',

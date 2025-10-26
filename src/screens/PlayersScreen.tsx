@@ -107,7 +107,8 @@ export default function PlayersScreen({ onContinue, onOpenSettings }: Props) {
     <GradientBackground colors={['#fff5f5', '#ffe8e8', '#ffd4d4']}>
       <View style={styles.container}>
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>Добавление игроков</Text>
+          <Text style={styles.title}>🎮 Бутылочка</Text>
+          <Text style={styles.subtitle}>Добавьте игроков</Text>
           {onOpenSettings && (
             <TouchableOpacity
               style={styles.settingsButton}
@@ -116,7 +117,12 @@ export default function PlayersScreen({ onContinue, onOpenSettings }: Props) {
                 onOpenSettings();
               }}
             >
-              <Text style={styles.settingsButtonText}>⚙️</Text>
+              <LinearGradient
+                colors={['#667eea', '#764ba2']}
+                style={styles.settingsButtonGradient}
+              >
+                <Text style={styles.settingsButtonText}>⚙️</Text>
+              </LinearGradient>
             </TouchableOpacity>
           )}
         </View>
@@ -256,32 +262,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 32,
+    fontSize: 40,
     fontWeight: 'bold',
     color: COLORS.primary,
     textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.1)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.15)',
+    textShadowOffset: { width: 0, height: 3 },
+    textShadowRadius: 6,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.textLight,
+    textAlign: 'center',
   },
   settingsButton: {
     position: 'absolute',
     right: 0,
     top: 0,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.white,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  settingsButtonGradient: {
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   settingsButtonText: {
-    fontSize: 24,
+    fontSize: 26,
   },
   inputContainer: {
     backgroundColor: COLORS.white,
@@ -360,13 +377,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.white,
-    padding: 16,
-    borderRadius: 16,
+    padding: 18,
+    borderRadius: 18,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+    borderWidth: 2,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
   },
   playerNumber: {
     width: 32,
