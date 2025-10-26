@@ -1,0 +1,23 @@
+# Build artifacts
+android/app/build/
+ios/build/
+android/build/
+
+# Dependencies
+node_modules/
+
+# Generated files
+*.jsbundle
+
+# Coverage
+coverage/
+
+# Metro
+.metro-health-check*
+
+# OS files
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
